@@ -19,7 +19,27 @@ import {
 } from "lucide-react";
 
 import type { Route } from "./+types/home";
-import { Button } from "~/components/ui/button";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
+import { Button, buttonVariants } from "~/components/ui/button";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { cn } from "~/lib/utils";
 
@@ -127,7 +147,7 @@ function renderMessageContent(content: string) {
 
 			return (
 				<pre
-					className="my-3 overflow-x-auto rounded-md bg-slate-950 p-4 text-sm text-slate-50"
+					className="my-3 overflow-x-auto rounded-md bg-foreground p-4 text-sm text-background"
 					key={`${index}-${part.slice(0, 12)}`}
 				>
 					<code>{code}</code>
@@ -152,6 +172,11 @@ export default function Home() {
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [error, setError] = React.useState<string | null>(null);
 	const [sidebarOpen, setSidebarOpen] = React.useState(true);
+	const [conversationToRename, setConversationToRename] =
+		React.useState<Conversation | null>(null);
+	const [renameTitle, setRenameTitle] = React.useState("");
+	const [conversationToDelete, setConversationToDelete] =
+		React.useState<Conversation | null>(null);
 
 	const activeConversation = conversations.find((item) => item.id === activeId) ?? null;
 	const groupedConversations = React.useMemo(
@@ -214,31 +239,51 @@ export default function Home() {
 		setMessages([]);
 	}
 
-	async function renameConversation(conversation: Conversation) {
-		const title = window.prompt("重命名会话", conversation.title)?.trim();
+	function openRenameDialog(conversation: Conversation) {
+		setConversationToRename(conversation);
+		setRenameTitle(conversation.title);
+	}
 
-		if (!title || title === conversation.title) {
+	async function renameConversation() {
+		if (!conversationToRename) {
 			return;
 		}
 
-		const data = await api<{ conversation: Conversation }>(
-			`/api/conversations/${conversation.id}`,
-			{
-				method: "PATCH",
-				body: JSON.stringify({ title }),
-			},
-		);
+		const title = renameTitle.trim();
 
-		setConversations((current) =>
-			current.map((item) => (item.id === conversation.id ? data.conversation : item)),
-		);
+		if (!title || title === conversationToRename.title) {
+			setConversationToRename(null);
+			return;
+		}
+
+		setError(null);
+
+		try {
+			const data = await api<{ conversation: Conversation }>(
+				`/api/conversations/${conversationToRename.id}`,
+				{
+					method: "PATCH",
+					body: JSON.stringify({ title }),
+				},
+			);
+
+			setConversations((current) =>
+				current.map((item) =>
+					item.id === conversationToRename.id ? data.conversation : item,
+				),
+			);
+			setConversationToRename(null);
+		} catch (reason) {
+			setError(reason instanceof Error ? reason.message : "重命名失败");
+		}
+	}
+
+	function handleRenameSubmit(event: React.FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		void renameConversation();
 	}
 
 	async function deleteConversation(conversation: Conversation) {
-		if (!window.confirm(`删除「${conversation.title}」？`)) {
-			return;
-		}
-
 		await api<{ ok: boolean }>(`/api/conversations/${conversation.id}`, {
 			method: "DELETE",
 		});
@@ -253,6 +298,22 @@ export default function Home() {
 				setActiveId(null);
 				setMessages([]);
 			}
+		}
+	}
+
+	async function confirmDeleteConversation() {
+		if (!conversationToDelete) {
+			return;
+		}
+
+		setError(null);
+
+		try {
+			await deleteConversation(conversationToDelete);
+		} catch (reason) {
+			setError(reason instanceof Error ? reason.message : "删除失败");
+		} finally {
+			setConversationToDelete(null);
 		}
 	}
 
@@ -407,16 +468,16 @@ export default function Home() {
 	}
 
 	return (
-		<main className="min-h-screen bg-[#f7f8fb] text-slate-950">
+		<main className="min-h-screen bg-background text-foreground">
 			<div className="flex h-screen overflow-hidden">
 				<aside
 					className={cn(
-						"fixed inset-y-0 left-0 z-30 w-[264px] flex-col border-r border-slate-200 bg-slate-50/95 transition-transform duration-200 md:static",
+						"fixed inset-y-0 left-0 z-30 w-[264px] flex-col border-r border-sidebar-border bg-sidebar/95 text-sidebar-foreground transition-transform duration-200 md:static",
 						sidebarOpen ? "flex translate-x-0" : "hidden -translate-x-full",
 					)}
 				>
 					<div className="flex h-16 items-center justify-between px-4">
-						<div className="flex items-center gap-2 text-xl font-semibold text-blue-600">
+						<div className="flex items-center gap-2 text-xl font-semibold text-sidebar-primary">
 							<Sparkles className="h-6 w-6" />
 							<span>deepseek</span>
 						</div>
@@ -438,7 +499,7 @@ export default function Home() {
 
 					<div className="px-3">
 						<Button
-							className="h-11 w-full rounded-full bg-white text-slate-900 shadow-sm hover:bg-slate-100"
+							className="h-11 w-full rounded-full"
 							onClick={createConversation}
 							variant="outline"
 						>
@@ -449,14 +510,14 @@ export default function Home() {
 
 					<div className="mt-5 flex-1 overflow-y-auto px-3 pb-4">
 						{isLoading ? (
-							<div className="flex items-center gap-2 px-3 text-sm text-slate-500">
+							<div className="flex items-center gap-2 px-3 text-sm text-muted-foreground">
 								<Loader2 className="h-4 w-4 animate-spin" />
 								加载会话
 							</div>
 						) : groupedConversations.length ? (
 							groupedConversations.map((group) => (
 								<section className="mb-5" key={group.label}>
-									<h2 className="mb-2 px-2 text-xs font-semibold text-slate-400">
+									<h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
 										{group.label}
 									</h2>
 									<div className="space-y-1">
@@ -465,8 +526,8 @@ export default function Home() {
 												className={cn(
 													"group flex h-11 items-center gap-2 rounded-xl px-3 text-sm",
 													activeId === conversation.id
-														? "bg-blue-100 text-blue-700"
-														: "text-slate-700 hover:bg-white",
+														? "bg-sidebar-accent text-sidebar-accent-foreground"
+														: "text-sidebar-foreground/80 hover:bg-background",
 												)}
 												key={conversation.id}
 											>
@@ -479,7 +540,7 @@ export default function Home() {
 												</button>
 												<div className="flex opacity-0 transition-opacity group-hover:opacity-100">
 													<Button
-														onClick={() => renameConversation(conversation)}
+														onClick={() => openRenameDialog(conversation)}
 														size="icon"
 														title="重命名"
 														variant="ghost"
@@ -487,7 +548,7 @@ export default function Home() {
 														<Edit3 className="h-3.5 w-3.5" />
 													</Button>
 													<Button
-														onClick={() => deleteConversation(conversation)}
+														onClick={() => setConversationToDelete(conversation)}
 														size="icon"
 														title="删除"
 														variant="ghost"
@@ -501,18 +562,18 @@ export default function Home() {
 								</section>
 							))
 						) : (
-							<div className="px-3 text-sm text-slate-500">还没有会话</div>
+							<div className="px-3 text-sm text-muted-foreground">还没有会话</div>
 						)}
 					</div>
 
-					<div className="flex items-center justify-between border-t border-slate-200 p-4">
+					<div className="flex items-center justify-between border-t border-sidebar-border p-4">
 						<div className="flex items-center gap-2">
-							<div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700">
+							<div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
 								LJ
 							</div>
 							<div>
 								<div className="text-sm font-medium">LJY</div>
-								<div className="text-xs text-slate-400">本地单用户</div>
+								<div className="text-xs text-muted-foreground">本地单用户</div>
 							</div>
 						</div>
 						<Button size="icon" variant="ghost" title="更多">
@@ -524,14 +585,14 @@ export default function Home() {
 				{sidebarOpen ? (
 					<button
 						aria-label="关闭侧栏遮罩"
-						className="fixed inset-0 z-20 bg-slate-950/20 md:hidden"
+						className="fixed inset-0 z-20 bg-foreground/20 md:hidden"
 						onClick={() => setSidebarOpen(false)}
 						type="button"
 					/>
 				) : null}
 
-				<section className="flex min-w-0 flex-1 flex-col bg-white">
-					<header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 px-4 md:px-6">
+				<section className="flex min-w-0 flex-1 flex-col bg-card">
+					<header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4 md:px-6">
 						<div className="flex min-w-0 items-center gap-3">
 							<Button
 								className="md:hidden"
@@ -559,8 +620,8 @@ export default function Home() {
 								<h1 className="truncate text-sm font-semibold md:text-base">
 									{activeConversation?.title ?? "新对话"}
 								</h1>
-								<div className="flex items-center gap-1 text-xs text-slate-400">
-									<Sparkles className="h-3 w-3 text-blue-500" />
+								<div className="flex items-center gap-1 text-xs text-muted-foreground">
+									<Sparkles className="h-3 w-3 text-primary" />
 									<span>{activeConversation?.model ?? "deepseek-v4-flash"}</span>
 								</div>
 							</div>
@@ -583,7 +644,7 @@ export default function Home() {
 											key={message.id}
 										>
 											{message.role !== "user" ? (
-												<div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+												<div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
 													<Bot className="h-4 w-4" />
 												</div>
 											) : null}
@@ -591,21 +652,21 @@ export default function Home() {
 												className={cn(
 													"max-w-[82%] text-sm md:text-base",
 													message.role === "user"
-														? "rounded-2xl bg-blue-600 px-4 py-3 text-white"
-														: "text-slate-800",
+														? "rounded-2xl bg-primary px-4 py-3 text-primary-foreground"
+														: "text-card-foreground",
 												)}
 											>
 												{message.content ? (
 													renderMessageContent(message.content)
 												) : (
-													<div className="flex items-center gap-2 text-slate-400">
+													<div className="flex items-center gap-2 text-muted-foreground">
 														<Loader2 className="h-4 w-4 animate-spin" />
 														正在生成
 													</div>
 												)}
 											</div>
 											{message.role === "user" ? (
-												<div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+												<div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
 													<User className="h-4 w-4" />
 												</div>
 											) : null}
@@ -615,11 +676,11 @@ export default function Home() {
 							) : (
 								<div className="flex flex-1 items-center justify-center">
 									<div className="text-center">
-										<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+										<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
 											<Bot className="h-7 w-7" />
 										</div>
 										<h2 className="text-xl font-semibold">今天想聊什么？</h2>
-										<p className="mt-2 text-sm text-slate-500">
+										<p className="mt-2 text-sm text-muted-foreground">
 											发送第一条消息后，会话和消息会写入 D1。
 										</p>
 									</div>
@@ -636,11 +697,11 @@ export default function Home() {
 					>
 						<div className="mx-auto max-w-3xl px-4 pb-5 md:px-6">
 							{error ? (
-								<div className="pointer-events-auto mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+								<div className="pointer-events-auto mb-3 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
 									{error}
 								</div>
 							) : null}
-							<div className="pointer-events-auto rounded-3xl border border-slate-200 bg-white p-3 shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
+							<div className="pointer-events-auto rounded-3xl border border-border bg-background p-3 shadow-[0_12px_40px_rgb(15_23_42_/_0.12)]">
 								<Textarea
 									className="max-h-40 min-h-14 resize-none border-0 px-2 shadow-none focus-visible:ring-0"
 									disabled={isSending}
@@ -681,7 +742,7 @@ export default function Home() {
 									</Button>
 								</div>
 							</div>
-							<div className="mt-2 flex items-center justify-center gap-1 text-xs text-slate-400">
+							<div className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
 								<Check className="h-3.5 w-3.5" />
 								<span>内容由 AI 生成，请仔细甄别</span>
 							</div>
@@ -689,6 +750,66 @@ export default function Home() {
 					</div>
 				</section>
 			</div>
+			<Dialog
+				onOpenChange={(open) => {
+					if (!open) {
+						setConversationToRename(null);
+						setRenameTitle("");
+					}
+				}}
+				open={Boolean(conversationToRename)}
+			>
+				<DialogContent>
+					<form className="grid gap-4" onSubmit={handleRenameSubmit}>
+						<DialogHeader>
+							<DialogTitle>重命名会话</DialogTitle>
+							<DialogDescription>修改会话在侧栏中显示的名称。</DialogDescription>
+						</DialogHeader>
+						<Input
+							autoFocus
+							onChange={(event) => setRenameTitle(event.target.value)}
+							placeholder="会话名称"
+							value={renameTitle}
+						/>
+						<DialogFooter>
+							<DialogClose asChild>
+								<Button type="button" variant="outline">
+									取消
+								</Button>
+							</DialogClose>
+							<Button disabled={!renameTitle.trim()} type="submit">
+								保存
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
+			<AlertDialog
+				onOpenChange={(open) => {
+					if (!open) {
+						setConversationToDelete(null);
+					}
+				}}
+				open={Boolean(conversationToDelete)}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>删除会话？</AlertDialogTitle>
+						<AlertDialogDescription>
+							将永久删除「{conversationToDelete?.title}」及其中的所有消息，此操作无法撤销。
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>取消</AlertDialogCancel>
+						<AlertDialogAction
+							className={buttonVariants({ variant: "destructive" })}
+							onClick={() => void confirmDeleteConversation()}
+						>
+							删除
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</main>
 	);
 }
