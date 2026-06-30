@@ -8,8 +8,16 @@
 	"compatibility_date": "2025-10-08",
 	"main": "./workers/app.ts",
 	"vars": {
-		"VALUE_FROM_CLOUDFLARE": "Hello from Hono/CF"
+		"VALUE_FROM_CLOUDFLARE": "Hello from Hono/CF",
+		"DEEPSEEK_MODEL": "deepseek-v4-flash"
 	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "chat-web-db",
+			"database_id": "local-chat-web-db"
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
