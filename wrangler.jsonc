@@ -15,7 +15,7 @@
 		{
 			"binding": "DB",
 			"database_name": "chat-web-db",
-			"database_id": "local-chat-web-db"
+			"database_id": "fd773a0e-a62f-4861-a625-57fd68cad990"
 		}
 	],
 	"observability": {
