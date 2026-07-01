@@ -1,11 +1,33 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc"],
+  "plugins": ["react", "typescript", "unicorn", "import", "jsx-a11y"],
   "categories": {
-    "correctness": "error"
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
   },
-  "rules": {},
   "env": {
-    "builtin": true
-  }
+    "browser": true,
+    "builtin": true,
+    "es2024": true
+  },
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
+  "rules": {
+    "eslint/no-underscore-dangle": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/no-array-index-key": "warn",
+    "react/no-unstable-nested-components": ["warn", { "allowAsProps": true }],
+    "react-hooks/exhaustive-deps": "off",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "typescript/consistent-type-imports": ["error"],
+    "unicorn/filename-case": ["warn", { "case": "kebabCase" }],
+    "unicorn/no-null": "off",
+    "import/no-unassigned-import": "off"
+  },
+  "ignorePatterns": ["app/services/**"]
 }

@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Bot,
   Check,
@@ -16,7 +15,8 @@ import {
   Trash2,
   User,
   X,
-} from "lucide-react";
+} from 'lucide-react';
+import * as React from 'react';
 
 import {
   AlertDialog,
@@ -27,8 +27,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import { Button, buttonVariants } from "~/components/ui/button";
+} from '~/components/ui/alert-dialog';
+import { Button, buttonVariants } from '~/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -37,10 +37,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { cn } from "~/lib/utils";
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Textarea } from '~/components/ui/textarea';
+import { cn } from '~/lib/utils';
 
 type Conversation = {
   id: string;
@@ -53,7 +53,7 @@ type Conversation = {
 type Message = {
   id: string;
   conversation_id: string;
-  role: "user" | "assistant" | "system";
+  role: 'user' | 'assistant' | 'system';
   content: string;
   model: string | null;
   status: string;
@@ -62,47 +62,47 @@ type Message = {
 
 type StreamEvent =
   | {
-      event: "meta";
+      event: 'meta';
       data: {
         conversation: Conversation;
         userMessage: Message;
       };
     }
-  | { event: "delta"; data: { content: string } }
-  | { event: "done"; data: { messageId: string; content: string; created_at: string } }
-  | { event: "error"; data: { message: string } };
+  | { event: 'delta'; data: { content: string } }
+  | { event: 'done'; data: { messageId: string; content: string; created_at: string } }
+  | { event: 'error'; data: { message: string } };
 
 export function meta() {
   return [
-    { title: "DeepSeek Chat" },
-    { name: "description", content: "DeepSeek conversation workspace" },
+    { title: 'DeepSeek Chat' },
+    { name: 'description', content: 'DeepSeek conversation workspace' },
   ];
 }
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
   });
 
   if (!response.ok) {
     const detail = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(detail?.error || "请求失败");
+    throw new Error(detail?.error || '请求失败');
   }
 
   return response.json() as Promise<T>;
 }
 
 function parseSseBlock(block: string): StreamEvent | null {
-  let event = "message";
-  let data = "";
+  let event = 'message';
+  let data = '';
 
-  for (const line of block.split("\n")) {
-    if (line.startsWith("event:")) {
+  for (const line of block.split('\n')) {
+    if (line.startsWith('event:')) {
       event = line.slice(6).trim();
     }
 
-    if (line.startsWith("data:")) {
+    if (line.startsWith('data:')) {
       data += line.slice(5).trim();
     }
   }
@@ -115,14 +115,14 @@ function parseSseBlock(block: string): StreamEvent | null {
 }
 
 function groupConversations(conversations: Conversation[]) {
-  const formatter = new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
+  const formatter = new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
   });
 
   return conversations.reduce<Array<{ label: string; items: Conversation[] }>>(
     (groups, conversation) => {
-      const label = formatter.format(new Date(conversation.updated_at)).replace("/", "-");
+      const label = formatter.format(new Date(conversation.updated_at)).replace('/', '-');
       const group = groups.find((item) => item.label === label);
 
       if (group) {
@@ -141,8 +141,8 @@ function renderMessageContent(content: string) {
   const parts = content.split(/(```[\s\S]*?```)/g).filter(Boolean);
 
   return parts.map((part, index) => {
-    if (part.startsWith("```")) {
-      const code = part.replace(/^```[a-zA-Z0-9_-]*\n?/, "").replace(/```$/, "");
+    if (part.startsWith('```')) {
+      const code = part.replace(/^```[a-zA-Z0-9_-]*\n?/, '').replace(/```$/, '');
 
       return (
         <pre
@@ -155,7 +155,7 @@ function renderMessageContent(content: string) {
     }
 
     return (
-      <div className="whitespace-pre-wrap leading-7" key={`${index}-${part.slice(0, 12)}`}>
+      <div className="leading-7 whitespace-pre-wrap" key={`${index}-${part.slice(0, 12)}`}>
         {part}
       </div>
     );
@@ -166,13 +166,13 @@ export default function Home() {
   const [conversations, setConversations] = React.useState<Conversation[]>([]);
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
-  const [input, setInput] = React.useState("");
+  const [input, setInput] = React.useState('');
   const [isSending, setIsSending] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [conversationToRename, setConversationToRename] = React.useState<Conversation | null>(null);
-  const [renameTitle, setRenameTitle] = React.useState("");
+  const [renameTitle, setRenameTitle] = React.useState('');
   const [conversationToDelete, setConversationToDelete] = React.useState<Conversation | null>(null);
 
   const activeConversation = conversations.find((item) => item.id === activeId) ?? null;
@@ -182,7 +182,7 @@ export default function Home() {
   );
 
   const refreshConversations = React.useCallback(async () => {
-    const data = await api<{ conversations: Conversation[] }>("/api/conversations");
+    const data = await api<{ conversations: Conversation[] }>('/api/conversations');
     setConversations(data.conversations);
     return data.conversations;
   }, []);
@@ -211,7 +211,7 @@ export default function Home() {
         setMessages([]);
       })
       .catch((reason: unknown) => {
-        setError(reason instanceof Error ? reason.message : "加载失败");
+        setError(reason instanceof Error ? reason.message : '加载失败');
       })
       .finally(() => {
         if (mounted) {
@@ -226,9 +226,9 @@ export default function Home() {
 
   async function createConversation() {
     setError(null);
-    const data = await api<{ conversation: Conversation }>("/api/conversations", {
-      method: "POST",
-      body: JSON.stringify({ title: "新对话" }),
+    const data = await api<{ conversation: Conversation }>('/api/conversations', {
+      method: 'POST',
+      body: JSON.stringify({ title: '新对话' }),
     });
 
     setConversations((current) => [data.conversation, ...current]);
@@ -259,7 +259,7 @@ export default function Home() {
       const data = await api<{ conversation: Conversation }>(
         `/api/conversations/${conversationToRename.id}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           body: JSON.stringify({ title }),
         },
       );
@@ -269,7 +269,7 @@ export default function Home() {
       );
       setConversationToRename(null);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "重命名失败");
+      setError(reason instanceof Error ? reason.message : '重命名失败');
     }
   }
 
@@ -280,7 +280,7 @@ export default function Home() {
 
   async function deleteConversation(conversation: Conversation) {
     await api<{ ok: boolean }>(`/api/conversations/${conversation.id}`, {
-      method: "DELETE",
+      method: 'DELETE',
     });
 
     const next = conversations.filter((item) => item.id !== conversation.id);
@@ -306,7 +306,7 @@ export default function Home() {
     try {
       await deleteConversation(conversationToDelete);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "删除失败");
+      setError(reason instanceof Error ? reason.message : '删除失败');
     } finally {
       setConversationToDelete(null);
     }
@@ -319,13 +319,13 @@ export default function Home() {
       return;
     }
 
-    setInput("");
+    setInput('');
     setError(null);
     setIsSending(true);
 
     const optimisticUserId = `local-user-${Date.now()}`;
     const optimisticAssistantId = `local-assistant-${Date.now()}`;
-    const optimisticConversationId = activeId ?? "pending";
+    const optimisticConversationId = activeId ?? 'pending';
     const createdAt = new Date().toISOString();
 
     setMessages((current) => [
@@ -333,27 +333,27 @@ export default function Home() {
       {
         id: optimisticUserId,
         conversation_id: optimisticConversationId,
-        role: "user",
+        role: 'user',
         content,
-        model: activeConversation?.model ?? "deepseek-v4-flash",
-        status: "done",
+        model: activeConversation?.model ?? 'deepseek-v4-flash',
+        status: 'done',
         created_at: createdAt,
       },
       {
         id: optimisticAssistantId,
         conversation_id: optimisticConversationId,
-        role: "assistant",
-        content: "",
-        model: activeConversation?.model ?? "deepseek-v4-flash",
-        status: "streaming",
+        role: 'assistant',
+        content: '',
+        model: activeConversation?.model ?? 'deepseek-v4-flash',
+        status: 'streaming',
         created_at: createdAt,
       },
     ]);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ conversationId: activeId, content }),
       });
 
@@ -361,12 +361,12 @@ export default function Home() {
         const detail = (await response.json().catch(() => null)) as {
           error?: string;
         } | null;
-        throw new Error(detail?.error || "发送失败");
+        throw new Error(detail?.error || '发送失败');
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = "";
+      let buffer = '';
 
       while (true) {
         const { value, done } = await reader.read();
@@ -376,8 +376,8 @@ export default function Home() {
         }
 
         buffer += decoder.decode(value, { stream: true });
-        const blocks = buffer.split("\n\n");
-        buffer = blocks.pop() ?? "";
+        const blocks = buffer.split('\n\n');
+        buffer = blocks.pop() ?? '';
 
         for (const block of blocks) {
           const parsed = parseSseBlock(block);
@@ -386,7 +386,7 @@ export default function Home() {
             continue;
           }
 
-          if (parsed.event === "meta") {
+          if (parsed.event === 'meta') {
             setActiveId(parsed.data.conversation.id);
             setConversations((current) => {
               const exists = current.some((item) => item.id === parsed.data.conversation.id);
@@ -407,7 +407,7 @@ export default function Home() {
                   : {
                       ...item,
                       conversation_id:
-                        item.conversation_id === "pending"
+                        item.conversation_id === 'pending'
                           ? parsed.data.conversation.id
                           : item.conversation_id,
                     },
@@ -415,7 +415,7 @@ export default function Home() {
             );
           }
 
-          if (parsed.event === "delta") {
+          if (parsed.event === 'delta') {
             setMessages((current) =>
               current.map((item) =>
                 item.id === optimisticAssistantId
@@ -425,7 +425,7 @@ export default function Home() {
             );
           }
 
-          if (parsed.event === "done") {
+          if (parsed.event === 'done') {
             setMessages((current) =>
               current.map((item) =>
                 item.id === optimisticAssistantId
@@ -433,7 +433,7 @@ export default function Home() {
                       ...item,
                       id: parsed.data.messageId,
                       content: parsed.data.content,
-                      status: "done",
+                      status: 'done',
                       created_at: parsed.data.created_at,
                     }
                   : item,
@@ -442,13 +442,13 @@ export default function Home() {
             void refreshConversations();
           }
 
-          if (parsed.event === "error") {
+          if (parsed.event === 'error') {
             throw new Error(parsed.data.message);
           }
         }
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "发送失败");
+      setError(reason instanceof Error ? reason.message : '发送失败');
       setMessages((current) =>
         current.filter(
           (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,
@@ -464,8 +464,8 @@ export default function Home() {
       <div className="flex h-screen overflow-hidden">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-30 w-[264px] flex-col border-r border-sidebar-border bg-sidebar/95 text-sidebar-foreground transition-transform duration-200 md:static",
-            sidebarOpen ? "flex translate-x-0" : "hidden -translate-x-full",
+            'fixed inset-y-0 left-0 z-30 w-[264px] flex-col border-r border-sidebar-border bg-sidebar/95 text-sidebar-foreground transition-transform duration-200 md:static',
+            sidebarOpen ? 'flex translate-x-0' : 'hidden -translate-x-full',
           )}
         >
           <div className="flex h-16 items-center justify-between px-4">
@@ -516,10 +516,10 @@ export default function Home() {
                     {group.items.map((conversation) => (
                       <div
                         className={cn(
-                          "group flex h-11 items-center gap-2 rounded-xl px-3 text-sm",
+                          'group flex h-11 items-center gap-2 rounded-xl px-3 text-sm',
                           activeId === conversation.id
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground/80 hover:bg-background",
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                            : 'text-sidebar-foreground/80 hover:bg-background',
                         )}
                         key={conversation.id}
                       >
@@ -600,7 +600,7 @@ export default function Home() {
                 onClick={() => setSidebarOpen((value) => !value)}
                 size="icon"
                 variant="ghost"
-                title={sidebarOpen ? "收起侧栏" : "展开侧栏"}
+                title={sidebarOpen ? '收起侧栏' : '展开侧栏'}
               >
                 {sidebarOpen ? (
                   <PanelLeftClose className="h-5 w-5" />
@@ -610,11 +610,11 @@ export default function Home() {
               </Button>
               <div className="min-w-0">
                 <h1 className="truncate text-sm font-semibold md:text-base">
-                  {activeConversation?.title ?? "新对话"}
+                  {activeConversation?.title ?? '新对话'}
                 </h1>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Sparkles className="h-3 w-3 text-primary" />
-                  <span>{activeConversation?.model ?? "deepseek-v4-flash"}</span>
+                  <span>{activeConversation?.model ?? 'deepseek-v4-flash'}</span>
                 </div>
               </div>
             </div>
@@ -624,28 +624,28 @@ export default function Home() {
           </header>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 pb-36 pt-8 md:px-6">
+            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 pt-8 pb-36 md:px-6">
               {messages.length ? (
                 <div className="space-y-8">
                   {messages.map((message) => (
                     <article
                       className={cn(
-                        "flex gap-4",
-                        message.role === "user" ? "justify-end" : "justify-start",
+                        'flex gap-4',
+                        message.role === 'user' ? 'justify-end' : 'justify-start',
                       )}
                       key={message.id}
                     >
-                      {message.role !== "user" ? (
+                      {message.role !== 'user' ? (
                         <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                           <Bot className="h-4 w-4" />
                         </div>
                       ) : null}
                       <div
                         className={cn(
-                          "max-w-[82%] text-sm md:text-base",
-                          message.role === "user"
-                            ? "rounded-2xl bg-primary px-4 py-3 text-primary-foreground"
-                            : "text-card-foreground",
+                          'max-w-[82%] text-sm md:text-base',
+                          message.role === 'user'
+                            ? 'rounded-2xl bg-primary px-4 py-3 text-primary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {message.content ? (
@@ -657,7 +657,7 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                      {message.role === "user" ? (
+                      {message.role === 'user' ? (
                         <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
                           <User className="h-4 w-4" />
                         </div>
@@ -683,8 +683,8 @@ export default function Home() {
 
           <div
             className={cn(
-              "pointer-events-none fixed inset-x-0 bottom-0 z-10",
-              sidebarOpen ? "md:left-[264px]" : "md:left-0",
+              'pointer-events-none fixed inset-x-0 bottom-0 z-10',
+              sidebarOpen ? 'md:left-[264px]' : 'md:left-0',
             )}
           >
             <div className="mx-auto max-w-3xl px-4 pb-5 md:px-6">
@@ -699,7 +699,7 @@ export default function Home() {
                   disabled={isSending}
                   onChange={(event) => setInput(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
                       event.preventDefault();
                       void sendMessage();
                     }
@@ -746,7 +746,7 @@ export default function Home() {
         onOpenChange={(open) => {
           if (!open) {
             setConversationToRename(null);
-            setRenameTitle("");
+            setRenameTitle('');
           }
         }}
         open={Boolean(conversationToRename)}
@@ -793,7 +793,7 @@ export default function Home() {
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
-              className={buttonVariants({ variant: "destructive" })}
+              className={buttonVariants({ variant: 'destructive' })}
               onClick={() => void confirmDeleteConversation()}
             >
               删除

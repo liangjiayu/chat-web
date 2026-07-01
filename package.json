@@ -11,9 +11,8 @@
     "deploy": "pnpm run build && wrangler deploy",
     "dev": "react-router dev",
     "format": "oxfmt . --write",
-    "format:check": "oxfmt . --check",
-    "lint": "oxlint . --react-plugin --jsx-a11y-plugin",
-    "lint:fix": "oxlint . --react-plugin --jsx-a11y-plugin --fix",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
     "preview": "pnpm run build && vite preview",
     "typecheck": "pnpm run cf-typegen && react-router typegen && tsc -b"
   },
