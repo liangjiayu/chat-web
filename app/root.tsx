@@ -1,3 +1,5 @@
+import { QueryClientProvider } from '@tanstack/react-query';
+import * as React from 'react';
 import {
   isRouteErrorResponse,
   Links,
@@ -8,7 +10,7 @@ import {
 } from 'react-router';
 
 import type { Route } from './+types/root';
-import { QueryProvider } from './providers/query-provider';
+import { createQueryClient } from './lib/query-client';
 
 import './styles/index.css';
 
@@ -31,10 +33,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const [queryClient] = React.useState(createQueryClient);
+
   return (
-    <QueryProvider>
+    <QueryClientProvider client={queryClient}>
       <Outlet />
-    </QueryProvider>
+    </QueryClientProvider>
   );
 }
 

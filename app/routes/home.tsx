@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import {
   conversationKeys,
   messageKeys,
@@ -51,8 +52,7 @@ import {
   useDeleteConversationMutation,
   useMessagesQuery,
   useRenameConversationMutation,
-} from '@/hooks/use-chat-queries';
-import { cn } from '@/lib/utils';
+} from '@/queries/conversations';
 import type {
   Conversation,
   ConversationListResponse,
