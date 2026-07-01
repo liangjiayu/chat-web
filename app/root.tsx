@@ -10,7 +10,7 @@ import {
 import type { Route } from './+types/root';
 import { QueryProvider } from './providers/query-provider';
 
-import './app.css';
+import './styles/index.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

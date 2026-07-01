@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import * as React from 'react';
+import { useNavigate, useParams } from 'react-router';
 
 import { streamChat } from '@/api/chat-stream';
 import {
@@ -129,11 +130,13 @@ function renderMessageContent(content: string) {
 
 export default function Home() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { id } = useParams();
   const conversationsQuery = useConversationsQuery();
   const createConversationMutation = useCreateConversationMutation();
   const renameConversationMutation = useRenameConversationMutation();
   const deleteConversationMutation = useDeleteConversationMutation();
-  const [activeId, setActiveId] = React.useState<string | null>(null);
+  const activeId = id ?? null;
   const messagesQuery = useMessagesQuery(activeId);
   const [pendingMessages, setPendingMessages] = React.useState<Message[] | null>(null);
   const [input, setInput] = React.useState('');
@@ -156,19 +159,8 @@ export default function Home() {
   );
 
   React.useEffect(() => {
-    if (!conversationsQuery.isSuccess) {
-      return;
-    }
-
-    if (!conversations.length) {
-      setActiveId(null);
-      return;
-    }
-
-    if (!activeId || !conversations.some((item) => item.id === activeId)) {
-      setActiveId(conversations[0].id);
-    }
-  }, [activeId, conversations, conversationsQuery.isSuccess]);
+    setPendingMessages(null);
+  }, [activeId]);
 
   function setConversationsCache(updater: (current: Conversation[]) => Conversation[]) {
     queryClient.setQueryData<ConversationListResponse>(conversationKeys.all, (current) => ({
@@ -192,7 +184,7 @@ export default function Home() {
 
   function loadMessages(conversationId: string) {
     setPendingMessages(null);
-    setActiveId(conversationId);
+    void navigate(`/chat/${conversationId}`);
   }
 
   async function createConversation() {
@@ -210,7 +202,7 @@ export default function Home() {
         },
       );
       setPendingMessages(null);
-      setActiveId(data.conversation.id);
+      void navigate(`/chat/${data.conversation.id}`);
     } catch (reason) {
       setActionError(reason instanceof Error ? reason.message : '创建会话失败');
     }
@@ -266,8 +258,8 @@ export default function Home() {
       if (next[0]) {
         loadMessages(next[0].id);
       } else {
-        setActiveId(null);
         setPendingMessages(null);
+        void navigate('/chat');
       }
     }
   }
@@ -347,7 +339,7 @@ export default function Home() {
         if (parsed.event === 'meta') {
           cacheConversationId = parsed.data.conversation.id;
           cacheConversation = parsed.data.conversation;
-          setActiveId(parsed.data.conversation.id);
+          void navigate(`/chat/${parsed.data.conversation.id}`, { replace: !activeId });
           setConversationsCache((current) => {
             const exists = current.some((item) => item.id === parsed.data.conversation.id);
             const next = exists
