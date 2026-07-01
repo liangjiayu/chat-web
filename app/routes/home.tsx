@@ -48,7 +48,6 @@ import {
   conversationKeys,
   messageKeys,
   useConversationsQuery,
-  useCreateConversationMutation,
   useDeleteConversationMutation,
   useMessagesQuery,
   useRenameConversationMutation,
@@ -133,7 +132,6 @@ export default function Home() {
   const navigate = useNavigate();
   const { id } = useParams();
   const conversationsQuery = useConversationsQuery();
-  const createConversationMutation = useCreateConversationMutation();
   const renameConversationMutation = useRenameConversationMutation();
   const deleteConversationMutation = useDeleteConversationMutation();
   const activeId = id ?? null;
@@ -157,6 +155,7 @@ export default function Home() {
     () => groupConversations(conversations),
     [conversations],
   );
+  const isEmptyHome = !activeId && !messages.length;
 
   React.useEffect(() => {
     setPendingMessages(null);
@@ -187,25 +186,11 @@ export default function Home() {
     void navigate(`/chat/${conversationId}`);
   }
 
-  async function createConversation() {
+  function startNewConversation() {
     setActionError(null);
-
-    try {
-      const data = await createConversationMutation.mutateAsync({ title: '新对话' });
-
-      setConversationsCache((current) => [data.conversation, ...current]);
-      queryClient.setQueryData<ConversationMessagesResponse>(
-        messageKeys.detail(data.conversation.id),
-        {
-          conversation: data.conversation,
-          messages: [],
-        },
-      );
-      setPendingMessages(null);
-      void navigate(`/chat/${data.conversation.id}`);
-    } catch (reason) {
-      setActionError(reason instanceof Error ? reason.message : '创建会话失败');
-    }
+    setPendingMessages(null);
+    setInput('');
+    void navigate('/chat');
   }
 
   function openRenameDialog(conversation: Conversation) {
@@ -431,6 +416,63 @@ export default function Home() {
     }
   }
 
+  function renderComposer() {
+    return (
+      <>
+        {error ? (
+          <div className="pointer-events-auto mb-3 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
+        <div className="pointer-events-auto rounded-3xl border border-border bg-background p-3 shadow-[0_12px_40px_rgb(15_23_42_/_0.12)]">
+          <Textarea
+            className="max-h-40 min-h-14 resize-none border-0 px-2 shadow-none focus-visible:ring-0"
+            disabled={isSending}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                void sendMessage();
+              }
+            }}
+            placeholder="给 DeepSeek 发送消息"
+            value={input}
+          />
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button size="sm" type="button" variant="secondary">
+                <Sparkles className="h-4 w-4" />
+                深度思考
+              </Button>
+              <Button size="sm" type="button" variant="outline">
+                <Search className="h-4 w-4" />
+                智能搜索
+              </Button>
+            </div>
+            <Button
+              className="rounded-full bg-[#6d86ff] text-white hover:bg-[#5f78f0]"
+              disabled={!input.trim() || isSending}
+              onClick={sendMessage}
+              size="icon"
+              title="发送"
+              type="button"
+            >
+              {isSending ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+        </div>
+        <div className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+          <Check className="h-3.5 w-3.5" />
+          <span>内容由 AI 生成，请仔细甄别</span>
+        </div>
+      </>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="flex h-screen overflow-hidden">
@@ -441,7 +483,7 @@ export default function Home() {
           )}
         >
           <div className="flex h-16 items-center justify-between px-4">
-            <div className="flex items-center gap-2 text-xl font-semibold text-sidebar-primary">
+            <div className="flex items-center gap-2 text-xl font-semibold text-[#3566ff]">
               <Sparkles className="h-6 w-6" />
               <span>deepseek</span>
             </div>
@@ -464,7 +506,8 @@ export default function Home() {
           <div className="px-3">
             <Button
               className="h-11 w-full rounded-full"
-              onClick={createConversation}
+              disabled={isSending}
+              onClick={startNewConversation}
               variant="outline"
             >
               <MessageSquarePlus className="h-4 w-4" />
@@ -556,7 +599,12 @@ export default function Home() {
         ) : null}
 
         <section className="flex min-w-0 flex-1 flex-col bg-card">
-          <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4 md:px-6">
+          <header
+            className={cn(
+              'flex h-14 shrink-0 items-center justify-between px-4 md:px-6',
+              isEmptyHome ? 'border-b border-transparent md:hidden' : 'border-b border-border',
+            )}
+          >
             <div className="flex min-w-0 items-center gap-3">
               <Button
                 className="md:hidden"
@@ -596,7 +644,12 @@ export default function Home() {
           </header>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 pt-8 pb-36 md:px-6">
+            <div
+              className={cn(
+                'mx-auto flex min-h-full w-full flex-col px-4 md:px-6',
+                isEmptyHome ? 'max-w-4xl pt-[22vh] pb-10' : 'max-w-3xl pt-8 pb-44',
+              )}
+            >
               {messages.length ? (
                 <div className="space-y-8">
                   {messages.map((message) => (
@@ -638,80 +691,31 @@ export default function Home() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-1 items-center justify-center">
-                  <div className="text-center">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <Bot className="h-7 w-7" />
-                    </div>
-                    <h2 className="text-xl font-semibold">今天想聊什么？</h2>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      发送第一条消息后，会话和消息会写入 D1。
-                    </p>
+                <div className="flex flex-1 flex-col items-center">
+                  <div className="mb-7 flex items-center gap-3 text-center">
+                    <Sparkles className="h-8 w-8 shrink-0 text-[#3566ff]" />
+                    <h2 className="text-xl font-semibold md:text-2xl">
+                      使用快速模式开始对话
+                    </h2>
+                  </div>
+                  <div className="w-full max-w-3xl">
+                    {renderComposer()}
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          <div
-            className={cn(
-              'pointer-events-none fixed inset-x-0 bottom-0 z-10',
-              sidebarOpen ? 'md:left-[264px]' : 'md:left-0',
-            )}
-          >
-            <div className="mx-auto max-w-3xl px-4 pb-5 md:px-6">
-              {error ? (
-                <div className="pointer-events-auto mb-3 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error}
-                </div>
-              ) : null}
-              <div className="pointer-events-auto rounded-3xl border border-border bg-background p-3 shadow-[0_12px_40px_rgb(15_23_42_/_0.12)]">
-                <Textarea
-                  className="max-h-40 min-h-14 resize-none border-0 px-2 shadow-none focus-visible:ring-0"
-                  disabled={isSending}
-                  onChange={(event) => setInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault();
-                      void sendMessage();
-                    }
-                  }}
-                  placeholder="给 DeepSeek 发送消息"
-                  value={input}
-                />
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" type="button" variant="secondary">
-                      <Sparkles className="h-4 w-4" />
-                      深度思考
-                    </Button>
-                    <Button size="sm" type="button" variant="outline">
-                      <Search className="h-4 w-4" />
-                      智能搜索
-                    </Button>
-                  </div>
-                  <Button
-                    className="rounded-full"
-                    disabled={!input.trim() || isSending}
-                    onClick={sendMessage}
-                    size="icon"
-                    title="发送"
-                    type="button"
-                  >
-                    {isSending ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Send className="h-5 w-5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <div className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                <Check className="h-3.5 w-3.5" />
-                <span>内容由 AI 生成，请仔细甄别</span>
-              </div>
+          {!isEmptyHome ? (
+            <div
+              className={cn(
+                'pointer-events-none fixed inset-x-0 bottom-0 z-10',
+                sidebarOpen ? 'md:left-[264px]' : 'md:left-0',
+              )}
+            >
+              <div className="mx-auto max-w-3xl px-4 pb-5 md:px-6">{renderComposer()}</div>
             </div>
-          </div>
+          ) : null}
         </section>
       </div>
       <Dialog
