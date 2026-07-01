@@ -1,4 +1,4 @@
-import type { StreamEvent } from '~/types/chat';
+import type { StreamEvent } from '@/types/chat';
 
 function parseSseBlock(block: string): StreamEvent | null {
   let event = 'message';

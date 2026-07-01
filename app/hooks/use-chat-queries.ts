@@ -6,7 +6,7 @@ import {
   getConversationMessages,
   getConversations,
   renameConversation,
-} from '~/api/conversations';
+} from '@/api/conversations';
 
 export const conversationKeys = {
   all: ['conversations'] as const,

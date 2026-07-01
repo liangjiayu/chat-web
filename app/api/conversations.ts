@@ -1,9 +1,9 @@
-import { request } from '~/lib/request';
+import { request } from '@/lib/request';
 import type {
   Conversation,
   ConversationListResponse,
   ConversationMessagesResponse,
-} from '~/types/chat';
+} from '@/types/chat';
 
 export function getConversations() {
   return request<ConversationListResponse>({

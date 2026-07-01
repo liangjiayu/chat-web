@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { streamChat } from '~/api/chat-stream';
+import { streamChat } from '@/api/chat-stream';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,8 +29,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '~/components/ui/alert-dialog';
-import { Button, buttonVariants } from '~/components/ui/button';
+} from '@/components/ui/alert-dialog';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -39,9 +39,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '~/components/ui/dialog';
-import { Input } from '~/components/ui/input';
-import { Textarea } from '~/components/ui/textarea';
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   conversationKeys,
   messageKeys,
@@ -50,14 +50,14 @@ import {
   useDeleteConversationMutation,
   useMessagesQuery,
   useRenameConversationMutation,
-} from '~/hooks/use-chat-queries';
-import { cn } from '~/lib/utils';
+} from '@/hooks/use-chat-queries';
+import { cn } from '@/lib/utils';
 import type {
   Conversation,
   ConversationListResponse,
   ConversationMessagesResponse,
   Message,
-} from '~/types/chat';
+} from '@/types/chat';
 
 export function meta() {
   return [
