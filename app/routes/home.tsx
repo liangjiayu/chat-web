@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Bot,
   Check,
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import { streamChat } from '~/api/chat-stream';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,78 +42,28 @@ import {
 } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
+import {
+  conversationKeys,
+  messageKeys,
+  useConversationsQuery,
+  useCreateConversationMutation,
+  useDeleteConversationMutation,
+  useMessagesQuery,
+  useRenameConversationMutation,
+} from '~/hooks/use-chat-queries';
 import { cn } from '~/lib/utils';
-
-type Conversation = {
-  id: string;
-  title: string;
-  model: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type Message = {
-  id: string;
-  conversation_id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  model: string | null;
-  status: string;
-  created_at: string;
-};
-
-type StreamEvent =
-  | {
-      event: 'meta';
-      data: {
-        conversation: Conversation;
-        userMessage: Message;
-      };
-    }
-  | { event: 'delta'; data: { content: string } }
-  | { event: 'done'; data: { messageId: string; content: string; created_at: string } }
-  | { event: 'error'; data: { message: string } };
+import type {
+  Conversation,
+  ConversationListResponse,
+  ConversationMessagesResponse,
+  Message,
+} from '~/types/chat';
 
 export function meta() {
   return [
     { title: 'DeepSeek Chat' },
     { name: 'description', content: 'DeepSeek conversation workspace' },
   ];
-}
-
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-    ...init,
-  });
-
-  if (!response.ok) {
-    const detail = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(detail?.error || '请求失败');
-  }
-
-  return response.json() as Promise<T>;
-}
-
-function parseSseBlock(block: string): StreamEvent | null {
-  let event = 'message';
-  let data = '';
-
-  for (const line of block.split('\n')) {
-    if (line.startsWith('event:')) {
-      event = line.slice(6).trim();
-    }
-
-    if (line.startsWith('data:')) {
-      data += line.slice(5).trim();
-    }
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  return { event, data: JSON.parse(data) } as StreamEvent;
 }
 
 function groupConversations(conversations: Conversation[]) {
@@ -135,6 +87,19 @@ function groupConversations(conversations: Conversation[]) {
     },
     [],
   );
+}
+
+function sortConversationsByUpdatedAt(conversations: Conversation[]) {
+  return conversations.reduce<Conversation[]>((items, conversation) => {
+    const updatedAt = new Date(conversation.updated_at).getTime();
+    const index = items.findIndex((item) => new Date(item.updated_at).getTime() < updatedAt);
+
+    if (index === -1) {
+      return [...items, conversation];
+    }
+
+    return [...items.slice(0, index), conversation, ...items.slice(index)];
+  }, []);
 }
 
 function renderMessageContent(content: string) {
@@ -163,77 +128,92 @@ function renderMessageContent(content: string) {
 }
 
 export default function Home() {
-  const [conversations, setConversations] = React.useState<Conversation[]>([]);
+  const queryClient = useQueryClient();
+  const conversationsQuery = useConversationsQuery();
+  const createConversationMutation = useCreateConversationMutation();
+  const renameConversationMutation = useRenameConversationMutation();
+  const deleteConversationMutation = useDeleteConversationMutation();
   const [activeId, setActiveId] = React.useState<string | null>(null);
-  const [messages, setMessages] = React.useState<Message[]>([]);
+  const messagesQuery = useMessagesQuery(activeId);
+  const [pendingMessages, setPendingMessages] = React.useState<Message[] | null>(null);
   const [input, setInput] = React.useState('');
   const [isSending, setIsSending] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const [actionError, setActionError] = React.useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [conversationToRename, setConversationToRename] = React.useState<Conversation | null>(null);
   const [renameTitle, setRenameTitle] = React.useState('');
   const [conversationToDelete, setConversationToDelete] = React.useState<Conversation | null>(null);
 
+  const conversations = conversationsQuery.data?.conversations ?? [];
+  const messages = pendingMessages ?? messagesQuery.data?.messages ?? [];
+  const isLoading = conversationsQuery.isLoading;
   const activeConversation = conversations.find((item) => item.id === activeId) ?? null;
+  const queryError = conversationsQuery.error ?? messagesQuery.error;
+  const error = actionError ?? (queryError instanceof Error ? queryError.message : null);
   const groupedConversations = React.useMemo(
     () => groupConversations(conversations),
     [conversations],
   );
 
-  const refreshConversations = React.useCallback(async () => {
-    const data = await api<{ conversations: Conversation[] }>('/api/conversations');
-    setConversations(data.conversations);
-    return data.conversations;
-  }, []);
-
-  const loadMessages = React.useCallback(async (conversationId: string) => {
-    const data = await api<{ conversation: Conversation; messages: Message[] }>(
-      `/api/conversations/${conversationId}/messages`,
-    );
-    setMessages(data.messages);
-    setActiveId(conversationId);
-  }, []);
-
   React.useEffect(() => {
-    let mounted = true;
+    if (!conversationsQuery.isSuccess) {
+      return;
+    }
 
-    refreshConversations()
-      .then((items) => {
-        if (!mounted) {
-          return;
-        }
+    if (!conversations.length) {
+      setActiveId(null);
+      return;
+    }
 
-        if (items[0]) {
-          return loadMessages(items[0].id);
-        }
+    if (!activeId || !conversations.some((item) => item.id === activeId)) {
+      setActiveId(conversations[0].id);
+    }
+  }, [activeId, conversations, conversationsQuery.isSuccess]);
 
-        setMessages([]);
-      })
-      .catch((reason: unknown) => {
-        setError(reason instanceof Error ? reason.message : '加载失败');
-      })
-      .finally(() => {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      });
+  function setConversationsCache(updater: (current: Conversation[]) => Conversation[]) {
+    queryClient.setQueryData<ConversationListResponse>(conversationKeys.all, (current) => ({
+      conversations: updater(current?.conversations ?? []),
+    }));
+  }
 
-    return () => {
-      mounted = false;
-    };
-  }, [loadMessages, refreshConversations]);
+  function setMessagesCache(
+    conversationId: string,
+    conversation: Conversation,
+    updater: (current: Message[]) => Message[],
+  ) {
+    queryClient.setQueryData<ConversationMessagesResponse>(
+      messageKeys.detail(conversationId),
+      (current) => ({
+        conversation: current?.conversation ?? conversation,
+        messages: updater(current?.messages ?? []),
+      }),
+    );
+  }
+
+  function loadMessages(conversationId: string) {
+    setPendingMessages(null);
+    setActiveId(conversationId);
+  }
 
   async function createConversation() {
-    setError(null);
-    const data = await api<{ conversation: Conversation }>('/api/conversations', {
-      method: 'POST',
-      body: JSON.stringify({ title: '新对话' }),
-    });
+    setActionError(null);
 
-    setConversations((current) => [data.conversation, ...current]);
-    setActiveId(data.conversation.id);
-    setMessages([]);
+    try {
+      const data = await createConversationMutation.mutateAsync({ title: '新对话' });
+
+      setConversationsCache((current) => [data.conversation, ...current]);
+      queryClient.setQueryData<ConversationMessagesResponse>(
+        messageKeys.detail(data.conversation.id),
+        {
+          conversation: data.conversation,
+          messages: [],
+        },
+      );
+      setPendingMessages(null);
+      setActiveId(data.conversation.id);
+    } catch (reason) {
+      setActionError(reason instanceof Error ? reason.message : '创建会话失败');
+    }
   }
 
   function openRenameDialog(conversation: Conversation) {
@@ -253,23 +233,20 @@ export default function Home() {
       return;
     }
 
-    setError(null);
+    setActionError(null);
 
     try {
-      const data = await api<{ conversation: Conversation }>(
-        `/api/conversations/${conversationToRename.id}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ title }),
-        },
-      );
+      const data = await renameConversationMutation.mutateAsync({
+        id: conversationToRename.id,
+        title,
+      });
 
-      setConversations((current) =>
+      setConversationsCache((current) =>
         current.map((item) => (item.id === conversationToRename.id ? data.conversation : item)),
       );
       setConversationToRename(null);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '重命名失败');
+      setActionError(reason instanceof Error ? reason.message : '重命名失败');
     }
   }
 
@@ -279,19 +256,18 @@ export default function Home() {
   }
 
   async function deleteConversation(conversation: Conversation) {
-    await api<{ ok: boolean }>(`/api/conversations/${conversation.id}`, {
-      method: 'DELETE',
-    });
+    await deleteConversationMutation.mutateAsync(conversation.id);
 
     const next = conversations.filter((item) => item.id !== conversation.id);
-    setConversations(next);
+    setConversationsCache(() => next);
+    queryClient.removeQueries({ queryKey: messageKeys.detail(conversation.id) });
 
     if (activeId === conversation.id) {
       if (next[0]) {
-        await loadMessages(next[0].id);
+        loadMessages(next[0].id);
       } else {
         setActiveId(null);
-        setMessages([]);
+        setPendingMessages(null);
       }
     }
   }
@@ -301,12 +277,12 @@ export default function Home() {
       return;
     }
 
-    setError(null);
+    setActionError(null);
 
     try {
       await deleteConversation(conversationToDelete);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '删除失败');
+      setActionError(reason instanceof Error ? reason.message : '删除失败');
     } finally {
       setConversationToDelete(null);
     }
@@ -320,16 +296,21 @@ export default function Home() {
     }
 
     setInput('');
-    setError(null);
+    setActionError(null);
     setIsSending(true);
 
     const optimisticUserId = `local-user-${Date.now()}`;
     const optimisticAssistantId = `local-assistant-${Date.now()}`;
     const optimisticConversationId = activeId ?? 'pending';
     const createdAt = new Date().toISOString();
-
-    setMessages((current) => [
-      ...current,
+    const fallbackConversation: Conversation = activeConversation ?? {
+      id: optimisticConversationId,
+      title: '新对话',
+      model: 'deepseek-v4-flash',
+      created_at: createdAt,
+      updated_at: createdAt,
+    };
+    const optimisticMessages: Message[] = [
       {
         id: optimisticUserId,
         conversation_id: optimisticConversationId,
@@ -348,112 +329,111 @@ export default function Home() {
         status: 'streaming',
         created_at: createdAt,
       },
-    ]);
+    ];
+    let cacheConversationId = activeId;
+    let cacheConversation = fallbackConversation;
+
+    if (activeId) {
+      setMessagesCache(activeId, fallbackConversation, (current) => [
+        ...current,
+        ...optimisticMessages,
+      ]);
+    } else {
+      setPendingMessages(optimisticMessages);
+    }
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId: activeId, content }),
-      });
+      for await (const parsed of streamChat({ conversationId: activeId, content })) {
+        if (parsed.event === 'meta') {
+          cacheConversationId = parsed.data.conversation.id;
+          cacheConversation = parsed.data.conversation;
+          setActiveId(parsed.data.conversation.id);
+          setConversationsCache((current) => {
+            const exists = current.some((item) => item.id === parsed.data.conversation.id);
+            const next = exists
+              ? current.map((item) =>
+                  item.id === parsed.data.conversation.id ? parsed.data.conversation : item,
+                )
+              : [parsed.data.conversation, ...current];
 
-      if (!response.ok || !response.body) {
-        const detail = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        throw new Error(detail?.error || '发送失败');
-      }
+            return sortConversationsByUpdatedAt(next);
+          });
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+          const updateMessages = (current: Message[]) =>
+            current.map((item) =>
+              item.id === optimisticUserId
+                ? parsed.data.userMessage
+                : {
+                    ...item,
+                    conversation_id:
+                      item.conversation_id === 'pending'
+                        ? parsed.data.conversation.id
+                        : item.conversation_id,
+                  },
+            );
 
-      while (true) {
-        const { value, done } = await reader.read();
-
-        if (done) {
-          break;
+          if (activeId) {
+            setMessagesCache(activeId, parsed.data.conversation, updateMessages);
+          } else {
+            const nextMessages = updateMessages(pendingMessages ?? optimisticMessages);
+            queryClient.setQueryData<ConversationMessagesResponse>(
+              messageKeys.detail(parsed.data.conversation.id),
+              {
+                conversation: parsed.data.conversation,
+                messages: nextMessages,
+              },
+            );
+            setPendingMessages(null);
+          }
         }
 
-        buffer += decoder.decode(value, { stream: true });
-        const blocks = buffer.split('\n\n');
-        buffer = blocks.pop() ?? '';
+        if (parsed.event === 'delta' && cacheConversationId) {
+          setMessagesCache(cacheConversationId, cacheConversation, (current) =>
+            current.map((item) =>
+              item.id === optimisticAssistantId
+                ? { ...item, content: item.content + parsed.data.content }
+                : item,
+            ),
+          );
+        }
 
-        for (const block of blocks) {
-          const parsed = parseSseBlock(block);
+        if (parsed.event === 'done' && cacheConversationId) {
+          setMessagesCache(cacheConversationId, cacheConversation, (current) =>
+            current.map((item) =>
+              item.id === optimisticAssistantId
+                ? {
+                    ...item,
+                    id: parsed.data.messageId,
+                    content: parsed.data.content,
+                    status: 'done',
+                    created_at: parsed.data.created_at,
+                  }
+                : item,
+            ),
+          );
+          void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
+        }
 
-          if (!parsed) {
-            continue;
-          }
-
-          if (parsed.event === 'meta') {
-            setActiveId(parsed.data.conversation.id);
-            setConversations((current) => {
-              const exists = current.some((item) => item.id === parsed.data.conversation.id);
-              const next = exists
-                ? current.map((item) =>
-                    item.id === parsed.data.conversation.id ? parsed.data.conversation : item,
-                  )
-                : [parsed.data.conversation, ...current];
-
-              return next.sort(
-                (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-              );
-            });
-            setMessages((current) =>
-              current.map((item) =>
-                item.id === optimisticUserId
-                  ? parsed.data.userMessage
-                  : {
-                      ...item,
-                      conversation_id:
-                        item.conversation_id === 'pending'
-                          ? parsed.data.conversation.id
-                          : item.conversation_id,
-                    },
-              ),
-            );
-          }
-
-          if (parsed.event === 'delta') {
-            setMessages((current) =>
-              current.map((item) =>
-                item.id === optimisticAssistantId
-                  ? { ...item, content: item.content + parsed.data.content }
-                  : item,
-              ),
-            );
-          }
-
-          if (parsed.event === 'done') {
-            setMessages((current) =>
-              current.map((item) =>
-                item.id === optimisticAssistantId
-                  ? {
-                      ...item,
-                      id: parsed.data.messageId,
-                      content: parsed.data.content,
-                      status: 'done',
-                      created_at: parsed.data.created_at,
-                    }
-                  : item,
-              ),
-            );
-            void refreshConversations();
-          }
-
-          if (parsed.event === 'error') {
-            throw new Error(parsed.data.message);
-          }
+        if (parsed.event === 'error') {
+          throw new Error(parsed.data.message);
         }
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '发送失败');
-      setMessages((current) =>
-        current.filter(
-          (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,
-        ),
-      );
+      setActionError(reason instanceof Error ? reason.message : '发送失败');
+
+      if (cacheConversationId) {
+        setMessagesCache(cacheConversationId, cacheConversation, (current) =>
+          current.filter(
+            (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,
+          ),
+        );
+      } else {
+        setPendingMessages((current) =>
+          (current ?? []).filter(
+            (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,
+          ),
+        );
+      }
     } finally {
       setIsSending(false);
     }
