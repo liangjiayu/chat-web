@@ -4,17 +4,14 @@
   "description": "A modern full-stack template powered by Cloudflare Workers, using Hono for backend APIs, React Router for frontend routing, and shadcn/ui for beautiful, accessible components styled with Tailwind CSS",
   "type": "module",
   "scripts": {
-    "build": "react-router build",
-    "cf-typegen": "wrangler types",
-    "db:migrate": "wrangler d1 migrations apply chat-web-db --local",
-    "db:seed": "wrangler d1 execute chat-web-db --local --command \"INSERT OR IGNORE INTO conversations (id, user_id, title, model, created_at, updated_at) VALUES ('demo-conversation', 'local-user', '数据库验证会话', 'deepseek-v4-flash', CAST(unixepoch('subsec') * 1000 AS INTEGER), CAST(unixepoch('subsec') * 1000 AS INTEGER)); INSERT OR IGNORE INTO messages (id, conversation_id, role, content, model, status, metadata, created_at, updated_at) VALUES ('demo-message', 'demo-conversation', 'user', '这是一条数据库插入验证消息', 'deepseek-v4-flash', 'done', '{}', CAST(unixepoch('subsec') * 1000 AS INTEGER), CAST(unixepoch('subsec') * 1000 AS INTEGER));\"",
-    "deploy": "pnpm run build && wrangler deploy",
     "dev": "react-router dev",
-    "format": "oxfmt . --write",
+    "build": "react-router build",
+    "typecheck": "wrangler types && react-router typegen && tsc -b",
     "lint": "oxlint .",
-    "lint:fix": "oxlint . --fix",
-    "preview": "pnpm run build && vite preview",
-    "typecheck": "pnpm run cf-typegen && react-router typegen && tsc -b"
+    "format": "oxfmt . --write",
+    "db:migrate:local": "wrangler d1 migrations apply chat-web-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply chat-web-db --remote",
+    "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",

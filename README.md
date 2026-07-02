@@ -23,13 +23,7 @@ production. Do not commit real API keys.
 Apply the local D1 migration:
 
 ```sh
-pnpm run db:migrate
-```
-
-Insert demo data for database verification:
-
-```sh
-pnpm run db:seed
+pnpm run db:migrate:local
 ```
 
 Start the dev server:
@@ -41,10 +35,11 @@ pnpm dev
 ## Scripts
 
 - `pnpm dev` starts the React Router dev server.
-- `pnpm run db:migrate` applies D1 migrations locally.
-- `pnpm run db:seed` inserts one demo conversation and message locally.
 - `pnpm run typecheck` regenerates Worker/React Router types and checks TS.
+- `pnpm run db:migrate:local` applies D1 migrations locally.
+- `pnpm run db:migrate:remote` applies D1 migrations in production.
 - `pnpm run build` builds the app.
+- `pnpm run deploy` deploys the Worker after a production build.
 
 ## Data Model
 
