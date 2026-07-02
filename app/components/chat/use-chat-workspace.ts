@@ -177,11 +177,12 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
     const optimisticUserId = `local-user-${Date.now()}`;
     const optimisticAssistantId = `local-assistant-${Date.now()}`;
     const optimisticConversationId = activeId ?? 'pending';
-    const createdAt = new Date().toISOString();
+    const createdAt = Date.now();
     const fallbackConversation: Conversation = activeConversation ?? {
       id: optimisticConversationId,
       title: '新对话',
       model: 'deepseek-v4-flash',
+      metadata: {},
       created_at: createdAt,
       updated_at: createdAt,
     };
@@ -193,7 +194,9 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
         content,
         model: activeConversation?.model ?? 'deepseek-v4-flash',
         status: 'done',
+        metadata: {},
         created_at: createdAt,
+        updated_at: createdAt,
       },
       {
         id: optimisticAssistantId,
@@ -202,7 +205,9 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
         content: '',
         model: activeConversation?.model ?? 'deepseek-v4-flash',
         status: 'streaming',
+        metadata: {},
         created_at: createdAt,
+        updated_at: createdAt,
       },
     ];
     let cacheConversationId = activeId;
@@ -281,7 +286,9 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
                     id: parsed.data.messageId,
                     content: parsed.data.content,
                     status: 'done',
+                    metadata: parsed.data.metadata,
                     created_at: parsed.data.created_at,
+                    updated_at: parsed.data.updated_at,
                   }
                 : item,
             ),

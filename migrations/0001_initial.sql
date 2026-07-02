@@ -5,9 +5,10 @@ CREATE TABLE IF NOT EXISTS conversations (
 	user_id TEXT NOT NULL,
 	title TEXT NOT NULL,
 	model TEXT NOT NULL,
-	created_at TEXT NOT NULL,
-	updated_at TEXT NOT NULL,
-	deleted_at TEXT
+	metadata TEXT NOT NULL DEFAULT '{}',
+	created_at INTEGER NOT NULL,
+	updated_at INTEGER NOT NULL,
+	deleted_at INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS idx_conversations_user_updated
@@ -20,9 +21,9 @@ CREATE TABLE IF NOT EXISTS messages (
 	content TEXT NOT NULL,
 	model TEXT,
 	status TEXT NOT NULL DEFAULT 'done',
-	token_input INTEGER,
-	token_output INTEGER,
-	created_at TEXT NOT NULL,
+	metadata TEXT NOT NULL DEFAULT '{}',
+	created_at INTEGER NOT NULL,
+	updated_at INTEGER NOT NULL,
 	FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 

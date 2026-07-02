@@ -12,8 +12,9 @@ type ConversationRow = {
   id: string;
   title: string;
   model: string;
-  created_at: string;
-  updated_at: string;
+  metadata: string;
+  created_at: number;
+  updated_at: number;
 };
 
 type MessageRow = {
@@ -23,9 +24,19 @@ type MessageRow = {
   content: string;
   model: string | null;
   status: string;
-  token_input: number | null;
-  token_output: number | null;
-  created_at: string;
+  metadata: string;
+  created_at: number;
+  updated_at: number;
+};
+
+type Metadata = Record<string, unknown>;
+
+type Conversation = Omit<ConversationRow, 'metadata'> & {
+  metadata: Metadata;
+};
+
+type Message = Omit<MessageRow, 'metadata'> & {
+  metadata: Metadata;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -46,23 +57,54 @@ function sse(controller: ReadableStreamDefaultController, event: string, data: u
   controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
 }
 
+function parseMetadata(value: string | null): Metadata {
+  if (!value) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Metadata)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+function toConversation(row: ConversationRow): Conversation {
+  return {
+    ...row,
+    metadata: parseMetadata(row.metadata),
+  };
+}
+
+function toMessage(row: MessageRow): Message {
+  return {
+    ...row,
+    metadata: parseMetadata(row.metadata),
+  };
+}
+
 async function getConversation(db: D1Database, id: string) {
-  return db
+  const row = await db
     .prepare(
-      'SELECT id, title, model, created_at, updated_at FROM conversations WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
+      'SELECT id, title, model, metadata, created_at, updated_at FROM conversations WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
     )
     .bind(id, LOCAL_USER_ID)
     .first<ConversationRow>();
+
+  return row ? toConversation(row) : null;
 }
 
 app.get('/api/conversations', async (c) => {
   const rows = await c.env.DB.prepare(
-    'SELECT id, title, model, created_at, updated_at FROM conversations WHERE user_id = ? AND deleted_at IS NULL ORDER BY updated_at DESC',
+    'SELECT id, title, model, metadata, created_at, updated_at FROM conversations WHERE user_id = ? AND deleted_at IS NULL ORDER BY updated_at DESC',
   )
     .bind(LOCAL_USER_ID)
     .all<ConversationRow>();
 
-  return c.json({ conversations: rows.results ?? [] });
+  return c.json({ conversations: (rows.results ?? []).map(toConversation) });
 });
 
 app.post('/api/conversations', async (c) => {
@@ -71,17 +113,19 @@ app.post('/api/conversations', async (c) => {
     model?: string;
   };
   const id = crypto.randomUUID();
-  const now = new Date().toISOString();
+  const now = Date.now();
   const title = body.title?.trim() || '新对话';
   const model = body.model || c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
 
   await c.env.DB.prepare(
-    'INSERT INTO conversations (id, user_id, title, model, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO conversations (id, user_id, title, model, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
   )
-    .bind(id, LOCAL_USER_ID, title, model, now, now)
+    .bind(id, LOCAL_USER_ID, title, model, '{}', now, now)
     .run();
 
-  return c.json({ conversation: { id, title, model, created_at: now, updated_at: now } });
+  return c.json({
+    conversation: { id, title, model, metadata: {}, created_at: now, updated_at: now },
+  });
 });
 
 app.patch('/api/conversations/:id', async (c) => {
@@ -98,7 +142,7 @@ app.patch('/api/conversations/:id', async (c) => {
   const result = await c.env.DB.prepare(
     'UPDATE conversations SET title = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
   )
-    .bind(title, new Date().toISOString(), id, LOCAL_USER_ID)
+    .bind(title, Date.now(), id, LOCAL_USER_ID)
     .run();
 
   if (!result.meta.changes) {
@@ -110,10 +154,11 @@ app.patch('/api/conversations/:id', async (c) => {
 
 app.delete('/api/conversations/:id', async (c) => {
   const id = c.req.param('id');
+  const now = Date.now();
   const result = await c.env.DB.prepare(
     'UPDATE conversations SET deleted_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
   )
-    .bind(new Date().toISOString(), new Date().toISOString(), id, LOCAL_USER_ID)
+    .bind(now, now, id, LOCAL_USER_ID)
     .run();
 
   if (!result.meta.changes) {
@@ -132,12 +177,12 @@ app.get('/api/conversations/:id/messages', async (c) => {
   }
 
   const rows = await c.env.DB.prepare(
-    'SELECT id, conversation_id, role, content, model, status, token_input, token_output, created_at FROM messages WHERE conversation_id = ? ORDER BY created_at ASC',
+    'SELECT id, conversation_id, role, content, model, status, metadata, created_at, updated_at FROM messages WHERE conversation_id = ? ORDER BY created_at ASC',
   )
     .bind(id)
     .all<MessageRow>();
 
-  return c.json({ conversation, messages: rows.results ?? [] });
+  return c.json({ conversation, messages: (rows.results ?? []).map(toMessage) });
 });
 
 app.post('/api/chat', async (c) => {
@@ -152,7 +197,7 @@ app.post('/api/chat', async (c) => {
     return jsonError('消息不能为空');
   }
 
-  const now = new Date().toISOString();
+  const now = Date.now();
   const model = c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
   let conversationId = body?.conversationId;
   let conversation = conversationId ? await getConversation(c.env.DB, conversationId) : null;
@@ -160,9 +205,9 @@ app.post('/api/chat', async (c) => {
   if (!conversation) {
     conversationId = crypto.randomUUID();
     await c.env.DB.prepare(
-      'INSERT INTO conversations (id, user_id, title, model, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO conversations (id, user_id, title, model, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
-      .bind(conversationId, LOCAL_USER_ID, makeTitle(content), model, now, now)
+      .bind(conversationId, LOCAL_USER_ID, makeTitle(content), model, '{}', now, now)
       .run();
     conversation = await getConversation(c.env.DB, conversationId);
   }
@@ -173,9 +218,9 @@ app.post('/api/chat', async (c) => {
 
   const userMessageId = crypto.randomUUID();
   await c.env.DB.prepare(
-    'INSERT INTO messages (id, conversation_id, role, content, model, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO messages (id, conversation_id, role, content, model, status, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
   )
-    .bind(userMessageId, conversationId, 'user', content, model, 'done', now)
+    .bind(userMessageId, conversationId, 'user', content, model, 'done', '{}', now, now)
     .run();
 
   await c.env.DB.prepare('UPDATE conversations SET updated_at = ? WHERE id = ?')
@@ -224,7 +269,9 @@ app.post('/api/chat', async (c) => {
             content,
             model,
             status: 'done',
+            metadata: {},
             created_at: now,
+            updated_at: now,
           },
         });
 
@@ -262,9 +309,9 @@ app.post('/api/chat', async (c) => {
             }
           }
 
-          const doneAt = new Date().toISOString();
+          const doneAt = Date.now();
           await c.env.DB.prepare(
-            'INSERT INTO messages (id, conversation_id, role, content, model, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO messages (id, conversation_id, role, content, model, status, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           )
             .bind(
               assistantMessageId,
@@ -273,6 +320,8 @@ app.post('/api/chat', async (c) => {
               assistantContent,
               model,
               'done',
+              '{}',
+              doneAt,
               doneAt,
             )
             .run();
@@ -283,7 +332,9 @@ app.post('/api/chat', async (c) => {
           sse(controller, 'done', {
             messageId: assistantMessageId,
             content: assistantContent,
+            metadata: {},
             created_at: doneAt,
+            updated_at: doneAt,
           });
         } catch (error) {
           sse(controller, 'error', {

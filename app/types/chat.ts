@@ -1,9 +1,12 @@
+export type Metadata = Record<string, unknown>;
+
 export type Conversation = {
   id: string;
   title: string;
   model: string;
-  created_at: string;
-  updated_at: string;
+  metadata: Metadata;
+  created_at: number;
+  updated_at: number;
 };
 
 export type Message = {
@@ -13,7 +16,9 @@ export type Message = {
   content: string;
   model: string | null;
   status: string;
-  created_at: string;
+  metadata: Metadata;
+  created_at: number;
+  updated_at: number;
 };
 
 export type ConversationListResponse = {
@@ -34,5 +39,14 @@ export type StreamEvent =
       };
     }
   | { event: 'delta'; data: { content: string } }
-  | { event: 'done'; data: { messageId: string; content: string; created_at: string } }
+  | {
+      event: 'done';
+      data: {
+        messageId: string;
+        content: string;
+        metadata: Metadata;
+        created_at: number;
+        updated_at: number;
+      };
+    }
   | { event: 'error'; data: { message: string } };

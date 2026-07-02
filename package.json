@@ -7,7 +7,7 @@
     "build": "react-router build",
     "cf-typegen": "wrangler types",
     "db:migrate": "wrangler d1 migrations apply chat-web-db --local",
-    "db:seed": "wrangler d1 execute chat-web-db --local --command \"INSERT OR IGNORE INTO conversations (id, user_id, title, model, created_at, updated_at) VALUES ('demo-conversation', 'local-user', '数据库验证会话', 'deepseek-v4-flash', datetime('now'), datetime('now')); INSERT OR IGNORE INTO messages (id, conversation_id, role, content, model, status, created_at) VALUES ('demo-message', 'demo-conversation', 'user', '这是一条数据库插入验证消息', 'deepseek-v4-flash', 'done', datetime('now'));\"",
+    "db:seed": "wrangler d1 execute chat-web-db --local --command \"INSERT OR IGNORE INTO conversations (id, user_id, title, model, created_at, updated_at) VALUES ('demo-conversation', 'local-user', '数据库验证会话', 'deepseek-v4-flash', CAST(unixepoch('subsec') * 1000 AS INTEGER), CAST(unixepoch('subsec') * 1000 AS INTEGER)); INSERT OR IGNORE INTO messages (id, conversation_id, role, content, model, status, metadata, created_at, updated_at) VALUES ('demo-message', 'demo-conversation', 'user', '这是一条数据库插入验证消息', 'deepseek-v4-flash', 'done', '{}', CAST(unixepoch('subsec') * 1000 AS INTEGER), CAST(unixepoch('subsec') * 1000 AS INTEGER));\"",
     "deploy": "pnpm run build && wrangler deploy",
     "dev": "react-router dev",
     "format": "oxfmt . --write",
