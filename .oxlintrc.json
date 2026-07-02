@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "unicorn", "import", "jsx-a11y"],
+  "plugins": ["react", "typescript", "unicorn", "import"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -8,7 +8,6 @@
   },
   "env": {
     "browser": true,
-    "builtin": true,
     "es2024": true
   },
   "settings": {

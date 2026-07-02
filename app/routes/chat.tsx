@@ -41,21 +41,22 @@ export default function Chat() {
             onNewConversation={workspace.startNewConversation}
             onOpenDelete={workspace.setConversationToDelete}
             onOpenRename={workspace.openRenameDialog}
+            onToggleSidebar={() => workspace.setSidebarOpen((value) => !value)}
             sidebarOpen={workspace.sidebarOpen}
           />
         }
         onCloseSidebar={() => workspace.setSidebarOpen(false)}
+        onOpenSidebar={() => workspace.setSidebarOpen(true)}
         sidebarOpen={workspace.sidebarOpen}
       >
         <ChatHeader
           activeConversation={workspace.activeConversation}
           isEmptyHome
           onOpenSidebar={() => workspace.setSidebarOpen(true)}
-          onToggleSidebar={() => workspace.setSidebarOpen((value) => !value)}
           sidebarOpen={workspace.sidebarOpen}
         />
         <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col px-4 pt-[22vh] pb-10 md:px-6">
+          <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-4 pt-[25vh] pb-10 md:px-6">
             <EmptyChat composer={composer} />
           </div>
         </div>

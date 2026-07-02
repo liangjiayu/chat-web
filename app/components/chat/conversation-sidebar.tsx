@@ -1,13 +1,21 @@
 import {
+  Archive,
+  Briefcase,
+  Code2,
+  Download,
   Edit3,
+  Folder,
   Loader2,
-  MessageSquarePlus,
+  MessageCircle,
   MoreHorizontal,
+  PanelLeftClose,
+  Plus,
   Search,
-  Sparkles,
+  Settings2,
   Trash2,
   X,
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,6 +34,7 @@ type ConversationSidebarProps = {
   onNewConversation: () => void;
   onOpenDelete: (conversation: Conversation) => void;
   onOpenRename: (conversation: Conversation) => void;
+  onToggleSidebar: () => void;
 };
 
 export function ConversationSidebar({
@@ -39,25 +48,39 @@ export function ConversationSidebar({
   onNewConversation,
   onOpenDelete,
   onOpenRename,
+  onToggleSidebar,
 }: ConversationSidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-30 w-[264px] flex-col border-r border-sidebar-border bg-sidebar/95 text-sidebar-foreground transition-transform duration-200 md:static',
-        sidebarOpen ? 'flex translate-x-0' : 'hidden -translate-x-full',
+        'fixed inset-y-0 left-0 z-30 flex h-screen w-[286px] shrink-0 flex-col overflow-hidden border-r border-[#e8e4dc] bg-[#f8f7f4] text-[#34302a] transition-all duration-200 md:relative md:translate-x-0',
+        sidebarOpen ? 'translate-x-0 md:w-[286px]' : '-translate-x-full md:w-0 md:border-r-0',
       )}
     >
-      <div className="flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-2 text-xl font-semibold text-[#3566ff]">
-          <Sparkles className="h-6 w-6" />
-          <span>deepseek</span>
+      <div className="flex h-[52px] shrink-0 items-center justify-between px-3">
+        <div className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-normal text-[#2f2b25]">
+          <span>DeepSeek</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" title="搜索">
+          <Button
+            className="size-8 text-[#6d675f] hover:bg-[#ece9e1]"
+            size="icon"
+            variant="ghost"
+            title="搜索"
+          >
             <Search className="h-4 w-4" />
           </Button>
           <Button
-            className="md:hidden"
+            className="hidden size-8 text-[#6d675f] hover:bg-[#ece9e1] md:inline-flex"
+            onClick={onToggleSidebar}
+            size="icon"
+            variant="ghost"
+            title="收起侧栏"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </Button>
+          <Button
+            className="size-8 text-[#6d675f] hover:bg-[#ece9e1] md:hidden"
             onClick={onCloseSidebar}
             size="icon"
             variant="ghost"
@@ -68,38 +91,46 @@ export function ConversationSidebar({
         </div>
       </div>
 
-      <div className="px-3">
+      <div className="space-y-1 px-2 py-2">
         <Button
-          className="h-11 w-full rounded-full"
+          className="h-9 w-full justify-start gap-3 rounded-lg px-2.5 text-[15px] font-medium text-[#34302a] hover:bg-[#ece9e1]"
           disabled={isSending}
           onClick={onNewConversation}
-          variant="outline"
+          variant="ghost"
         >
-          <MessageSquarePlus className="h-4 w-4" />
+          <Plus className="h-4 w-4 rounded-full bg-[#dedbd2] p-0.5" />
           开启新对话
         </Button>
+        <SidebarNavItem icon={<MessageCircle className="h-4 w-4" />} label="会话" />
+        <SidebarNavItem icon={<Folder className="h-4 w-4" />} label="项目" />
+        <SidebarNavItem icon={<Archive className="h-4 w-4" />} label="文件" />
+        <SidebarNavItem icon={<Code2 className="h-4 w-4" />} label="代码" muted />
+        <SidebarNavItem icon={<Briefcase className="h-4 w-4" />} label="自定义" />
       </div>
 
-      <div className="mt-5 flex-1 overflow-y-auto px-3 pb-4">
+      <div className="mt-4 flex items-center justify-between px-3 text-xs text-[#7b756d]">
+        <span>最近</span>
+        <Settings2 className="h-3.5 w-3.5" />
+      </div>
+
+      <div className="mt-2 flex-1 overflow-y-auto px-2 pb-4">
         {isLoading ? (
-          <div className="flex items-center gap-2 px-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 px-3 text-sm text-[#7b756d]">
             <Loader2 className="h-4 w-4 animate-spin" />
             加载会话
           </div>
         ) : groups.length ? (
           groups.map((group) => (
-            <section className="mb-5" key={group.label}>
-              <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
-                {group.label}
-              </h2>
-              <div className="space-y-1">
+            <section className="mb-4" key={group.label}>
+              <h2 className="mb-1 px-2 text-xs font-medium text-[#928b82]">{group.label}</h2>
+              <div>
                 {group.items.map((conversation) => (
                   <div
                     className={cn(
-                      'group flex h-11 items-center gap-2 rounded-xl px-3 text-sm',
+                      'group flex h-8 items-center gap-1 rounded-lg px-2 text-sm',
                       activeId === conversation.id
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground/80 hover:bg-background',
+                        ? 'bg-[#ebe8e0] text-[#2f2b25]'
+                        : 'text-[#4a453f] hover:bg-[#efede7]',
                     )}
                     key={conversation.id}
                   >
@@ -112,6 +143,7 @@ export function ConversationSidebar({
                     </button>
                     <div className="flex opacity-0 transition-opacity group-hover:opacity-100">
                       <Button
+                        className="size-6 text-[#7b756d] hover:bg-[#dedbd2]"
                         onClick={() => onOpenRename(conversation)}
                         size="icon"
                         title="重命名"
@@ -120,6 +152,7 @@ export function ConversationSidebar({
                         <Edit3 className="h-3.5 w-3.5" />
                       </Button>
                       <Button
+                        className="size-6 text-[#7b756d] hover:bg-[#dedbd2]"
                         onClick={() => onOpenDelete(conversation)}
                         size="icon"
                         title="删除"
@@ -134,24 +167,67 @@ export function ConversationSidebar({
             </section>
           ))
         ) : (
-          <div className="px-3 text-sm text-muted-foreground">还没有会话</div>
+          <div className="px-3 text-sm text-[#7b756d]">还没有会话</div>
         )}
       </div>
 
-      <div className="flex items-center justify-between border-t border-sidebar-border p-4">
+      <div className="flex shrink-0 items-center justify-between border-t border-[#e8e4dc] p-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
-            LJ
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2f2b25] text-sm font-semibold text-white">
+            L
           </div>
           <div>
-            <div className="text-sm font-medium">LJY</div>
-            <div className="text-xs text-muted-foreground">本地单用户</div>
+            <div className="text-sm font-semibold text-[#34302a]">LJY</div>
+            <div className="text-xs text-[#7b756d]">本地单用户</div>
           </div>
         </div>
-        <Button size="icon" variant="ghost" title="更多">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            className="size-8 border-[#dedbd2] bg-[#fbfaf7] text-[#5f5a52] hover:bg-[#efede7]"
+            size="icon"
+            variant="outline"
+            title="导出"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+          <Button
+            className="size-8 text-[#5f5a52] hover:bg-[#ece9e1]"
+            size="icon"
+            variant="ghost"
+            title="更多"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </aside>
+  );
+}
+
+function SidebarNavItem({
+  icon,
+  label,
+  muted = false,
+}: {
+  icon: ReactNode;
+  label: string;
+  muted?: boolean;
+}) {
+  return (
+    <button
+      className={cn(
+        'flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-left text-[15px] font-medium hover:bg-[#ece9e1]',
+        muted ? 'text-[#aaa49b]' : 'text-[#34302a]',
+      )}
+      type="button"
+    >
+      <span className="text-[#5f5a52]">{icon}</span>
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {muted ? (
+        <span className="rounded-full border border-[#d9d5cc] bg-[#fbfaf7] px-1.5 py-0.5 text-xs text-[#5f7197]">
+          升级
+        </span>
+      ) : null}
+    </button>
   );
 }

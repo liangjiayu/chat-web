@@ -1,4 +1,4 @@
-import { ChevronLeft, Menu, PanelLeftClose, PanelLeftOpen, Sparkles } from 'lucide-react';
+import { ChevronDown, Menu } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,26 +9,23 @@ type ChatHeaderProps = {
   isEmptyHome?: boolean;
   sidebarOpen: boolean;
   onOpenSidebar: () => void;
-  onToggleSidebar: () => void;
 };
 
 export function ChatHeader({
   activeConversation,
   isEmptyHome = false,
-  sidebarOpen,
   onOpenSidebar,
-  onToggleSidebar,
 }: ChatHeaderProps) {
   return (
     <header
       className={cn(
-        'flex h-14 shrink-0 items-center justify-between px-4 md:px-6',
-        isEmptyHome ? 'border-b border-transparent md:hidden' : 'border-b border-border',
+        'flex h-[52px] shrink-0 items-center justify-between bg-[#fbfaf7] px-3 md:px-5',
+        isEmptyHome ? 'border-b border-transparent md:hidden' : 'border-b border-transparent',
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
         <Button
-          className="md:hidden"
+          className="size-8 text-[#5f5a52] hover:bg-[#efede7] md:hidden"
           onClick={onOpenSidebar}
           size="icon"
           variant="ghost"
@@ -36,31 +33,19 @@ export function ChatHeader({
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <Button
-          className="hidden md:inline-flex"
-          onClick={onToggleSidebar}
-          size="icon"
-          variant="ghost"
-          title={sidebarOpen ? '收起侧栏' : '展开侧栏'}
-        >
-          {sidebarOpen ? (
-            <PanelLeftClose className="h-5 w-5" />
-          ) : (
-            <PanelLeftOpen className="h-5 w-5" />
-          )}
-        </Button>
-        <div className="min-w-0">
-          <h1 className="truncate text-sm font-semibold md:text-base">
+        <div className="flex min-w-0 items-center gap-1">
+          <h1 className="truncate text-[15px] font-semibold text-[#2f2b25]">
             {activeConversation?.title ?? '新对话'}
           </h1>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-primary" />
-            <span>{activeConversation?.model ?? 'deepseek-v4-flash'}</span>
-          </div>
+          <ChevronDown className="h-4 w-4 shrink-0 text-[#7b756d]" />
         </div>
       </div>
-      <Button size="icon" variant="ghost" title="返回顶部">
-        <ChevronLeft className="h-5 w-5 rotate-90" />
+      <Button
+        className="h-8 rounded-lg border-[#dedbd2] bg-[#fbfaf7] px-3 text-sm font-semibold text-[#2f2b25] shadow-sm hover:bg-[#f1efea]"
+        size="sm"
+        variant="outline"
+      >
+        分享
       </Button>
     </header>
   );

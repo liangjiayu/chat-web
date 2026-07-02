@@ -32,7 +32,7 @@ export function MessageContent({ content }: { content: string }) {
 
       return (
         <pre
-          className="my-3 overflow-x-auto rounded-md bg-foreground p-4 text-sm text-background"
+          className="my-3 overflow-x-auto rounded-lg border border-[#dedbd2] bg-[#f7f5f0] p-4 text-sm leading-6 text-[#34302a]"
           key={part.key}
         >
           <code>{code}</code>
