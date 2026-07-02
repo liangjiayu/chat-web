@@ -54,7 +54,7 @@ export default function ChatDetail() {
         </div>
         <div
           className={[
-            'pointer-events-none fixed inset-x-0 bottom-0 z-10',
+            'pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-card pt-4',
             workspace.sidebarOpen ? 'md:left-[264px]' : 'md:left-0',
           ].join(' ')}
         >
