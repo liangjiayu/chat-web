@@ -1,15 +1,15 @@
+import { asc, eq } from 'drizzle-orm';
+
+import { createDb } from '../db/client';
+import { messages } from '../db/schema';
 import type { MessageHistoryRow, MessageRow } from '../types';
-import { toMessage } from '../utils/chat';
 
 export async function getMessages(db: D1Database, conversationId: string) {
-  const rows = await db
-    .prepare(
-      'SELECT id, conversation_id, role, content, model, status, metadata, created_at, updated_at FROM messages WHERE conversation_id = ? ORDER BY created_at ASC',
-    )
-    .bind(conversationId)
-    .all<MessageRow>();
-
-  return (rows.results ?? []).map(toMessage);
+  return createDb(db)
+    .select()
+    .from(messages)
+    .where(eq(messages.conversation_id, conversationId))
+    .orderBy(asc(messages.created_at));
 }
 
 export async function createMessage(
@@ -24,31 +24,32 @@ export async function createMessage(
     now: number;
   },
 ) {
-  await db
-    .prepare(
-      'INSERT INTO messages (id, conversation_id, role, content, model, status, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    )
-    .bind(
-      input.id,
-      input.conversationId,
-      input.role,
-      input.content,
-      input.model,
-      input.status,
-      '{}',
-      input.now,
-      input.now,
-    )
+  await createDb(db)
+    .insert(messages)
+    .values({
+      id: input.id,
+      conversation_id: input.conversationId,
+      role: input.role,
+      content: input.content,
+      model: input.model,
+      status: input.status,
+      metadata: {},
+      created_at: input.now,
+      updated_at: input.now,
+    })
     .run();
 }
 
 export async function getMessageHistory(db: D1Database, conversationId: string) {
-  const history = await db
-    .prepare(
-      'SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 40',
-    )
-    .bind(conversationId)
-    .all<MessageHistoryRow>();
+  const history = await createDb(db)
+    .select({
+      role: messages.role,
+      content: messages.content,
+    })
+    .from(messages)
+    .where(eq(messages.conversation_id, conversationId))
+    .orderBy(asc(messages.created_at))
+    .limit(40);
 
-  return history.results;
+  return history satisfies MessageHistoryRow[];
 }

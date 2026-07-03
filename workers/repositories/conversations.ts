@@ -1,27 +1,41 @@
+import { and, desc, eq, isNull } from 'drizzle-orm';
+
 import { LOCAL_USER_ID } from '../constants';
+import { createDb } from '../db/client';
+import { conversations } from '../db/schema';
 import type { Conversation, ConversationRow } from '../types';
-import { toConversation } from '../utils/chat';
+
+const conversationColumns = {
+  id: conversations.id,
+  title: conversations.title,
+  model: conversations.model,
+  metadata: conversations.metadata,
+  created_at: conversations.created_at,
+  updated_at: conversations.updated_at,
+};
 
 export async function getConversations(db: D1Database) {
-  const rows = await db
-    .prepare(
-      'SELECT id, title, model, metadata, created_at, updated_at FROM conversations WHERE user_id = ? AND deleted_at IS NULL ORDER BY updated_at DESC',
-    )
-    .bind(LOCAL_USER_ID)
-    .all<ConversationRow>();
-
-  return (rows.results ?? []).map(toConversation);
+  return createDb(db)
+    .select(conversationColumns)
+    .from(conversations)
+    .where(and(eq(conversations.user_id, LOCAL_USER_ID), isNull(conversations.deleted_at)))
+    .orderBy(desc(conversations.updated_at));
 }
 
 export async function getConversation(db: D1Database, id: string) {
-  const row = await db
-    .prepare(
-      'SELECT id, title, model, metadata, created_at, updated_at FROM conversations WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
+  const row = await createDb(db)
+    .select(conversationColumns)
+    .from(conversations)
+    .where(
+      and(
+        eq(conversations.id, id),
+        eq(conversations.user_id, LOCAL_USER_ID),
+        isNull(conversations.deleted_at),
+      ),
     )
-    .bind(id, LOCAL_USER_ID)
-    .first<ConversationRow>();
+    .get();
 
-  return row ? toConversation(row) : null;
+  return row ?? null;
 }
 
 export async function createConversation(
@@ -33,14 +47,7 @@ export async function createConversation(
     now: number;
   },
 ): Promise<Conversation> {
-  await db
-    .prepare(
-      'INSERT INTO conversations (id, user_id, title, model, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    )
-    .bind(input.id, LOCAL_USER_ID, input.title, input.model, '{}', input.now, input.now)
-    .run();
-
-  return {
+  const conversation: ConversationRow = {
     id: input.id,
     title: input.title,
     model: input.model,
@@ -48,6 +55,16 @@ export async function createConversation(
     created_at: input.now,
     updated_at: input.now,
   };
+
+  await createDb(db)
+    .insert(conversations)
+    .values({
+      ...conversation,
+      user_id: LOCAL_USER_ID,
+    })
+    .run();
+
+  return conversation;
 }
 
 export async function renameConversation(
@@ -58,23 +75,37 @@ export async function renameConversation(
     now: number;
   },
 ) {
-  return db
-    .prepare(
-      'UPDATE conversations SET title = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
+  return createDb(db)
+    .update(conversations)
+    .set({ title: input.title, updated_at: input.now })
+    .where(
+      and(
+        eq(conversations.id, input.id),
+        eq(conversations.user_id, LOCAL_USER_ID),
+        isNull(conversations.deleted_at),
+      ),
     )
-    .bind(input.title, input.now, input.id, LOCAL_USER_ID)
     .run();
 }
 
 export async function deleteConversation(db: D1Database, id: string, now: number) {
-  return db
-    .prepare(
-      'UPDATE conversations SET deleted_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
+  return createDb(db)
+    .update(conversations)
+    .set({ deleted_at: now, updated_at: now })
+    .where(
+      and(
+        eq(conversations.id, id),
+        eq(conversations.user_id, LOCAL_USER_ID),
+        isNull(conversations.deleted_at),
+      ),
     )
-    .bind(now, now, id, LOCAL_USER_ID)
     .run();
 }
 
 export async function touchConversation(db: D1Database, id: string, now: number) {
-  return db.prepare('UPDATE conversations SET updated_at = ? WHERE id = ?').bind(now, id).run();
+  return createDb(db)
+    .update(conversations)
+    .set({ updated_at: now })
+    .where(eq(conversations.id, id))
+    .run();
 }
