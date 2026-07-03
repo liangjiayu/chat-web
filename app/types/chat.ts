@@ -21,9 +21,7 @@ export type Message = {
   updated_at: number;
 };
 
-export type ConversationListResponse = {
-  conversations: Conversation[];
-};
+export type ConversationListResponse = Conversation[];
 
 export type ConversationMessagesResponse = {
   conversation: Conversation;

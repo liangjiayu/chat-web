@@ -9,13 +9,9 @@ export type RenameConversationRequest = {
   title?: string;
 };
 
-export type ConversationListResponse = {
-  conversations: ConversationDTO[];
-};
+export type ConversationListResponse = ConversationDTO[];
 
-export type ConversationResponse = {
-  conversation: ConversationDTO;
-};
+export type ConversationResponse = ConversationDTO;
 
 export type ConversationMessagesResponse = {
   conversation: ConversationDTO;
@@ -23,5 +19,5 @@ export type ConversationMessagesResponse = {
 };
 
 export type DeleteConversationResponse = {
-  ok: true;
+  success: true;
 };

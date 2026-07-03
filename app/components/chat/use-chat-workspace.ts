@@ -40,7 +40,7 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
   const [renameTitle, setRenameTitle] = React.useState('');
   const [conversationToDelete, setConversationToDelete] = React.useState<Conversation | null>(null);
 
-  const conversations = conversationsQuery.data?.conversations ?? [];
+  const conversations = conversationsQuery.data ?? [];
   const messages = pendingMessages ?? messagesQuery.data?.messages ?? [];
   const activeConversation = conversations.find((item) => item.id === activeId) ?? null;
   const queryError = conversationsQuery.error ?? messagesQuery.error;
@@ -55,9 +55,9 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
   }, [activeId]);
 
   function setConversationsCache(updater: (current: Conversation[]) => Conversation[]) {
-    queryClient.setQueryData<ConversationListResponse>(conversationKeys.all, (current) => ({
-      conversations: updater(current?.conversations ?? []),
-    }));
+    queryClient.setQueryData<ConversationListResponse>(conversationKeys.all, (current) =>
+      updater(current ?? []),
+    );
   }
 
   function setMessagesCache(
@@ -111,13 +111,13 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
     setActionError(null);
 
     try {
-      const data = await renameConversationMutation.mutateAsync({
+      const conversation = await renameConversationMutation.mutateAsync({
         id: conversationToRename.id,
         title,
       });
 
       setConversationsCache((current) =>
-        current.map((item) => (item.id === conversationToRename.id ? data.conversation : item)),
+        current.map((item) => (item.id === conversationToRename.id ? conversation : item)),
       );
       closeRenameDialog();
     } catch (reason) {

@@ -28,7 +28,7 @@ export function createConversation(payload: { title: string; model?: string }) {
 }
 
 export function renameConversation(conversationId: string, title: string) {
-  return request<{ conversation: Conversation }>({
+  return request<Conversation>({
     method: 'PATCH',
     url: `/api/conversations/${conversationId}`,
     data: { title },
@@ -36,7 +36,7 @@ export function renameConversation(conversationId: string, title: string) {
 }
 
 export function deleteConversation(conversationId: string) {
-  return request<{ ok: boolean }>({
+  return request<{ success: boolean }>({
     method: 'DELETE',
     url: `/api/conversations/${conversationId}`,
   });

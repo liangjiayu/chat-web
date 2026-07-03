@@ -20,7 +20,7 @@ export const conversationsRoute = new Hono<{ Bindings: Cloudflare.Env }>();
 conversationsRoute.get('/conversations', async (c) => {
   const conversations = await getConversations(c.env.DB);
 
-  return c.json({ conversations });
+  return c.json(conversations);
 });
 
 conversationsRoute.post('/conversations', async (c) => {
@@ -49,7 +49,7 @@ conversationsRoute.patch('/conversations/:id', async (c) => {
     return jsonError('会话不存在', 404);
   }
 
-  return c.json({ conversation: await getConversation(c.env.DB, id) });
+  return c.json(await getConversation(c.env.DB, id));
 });
 
 conversationsRoute.delete('/conversations/:id', async (c) => {
@@ -60,7 +60,7 @@ conversationsRoute.delete('/conversations/:id', async (c) => {
     return jsonError('会话不存在', 404);
   }
 
-  return c.json({ ok: true });
+  return c.json({ success: true });
 });
 
 conversationsRoute.get('/conversations/:id', async (c) => {
