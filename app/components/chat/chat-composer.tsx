@@ -25,9 +25,9 @@ export function ChatComposer({
           {error}
         </div>
       ) : null}
-      <div className="pointer-events-auto rounded-[20px] border border-[#d8d4cc] bg-white p-3 shadow-[0_14px_40px_rgb(47_43_37_/_0.12)]">
+      <div className="pointer-events-auto rounded-[24px] border border-[#dedede] bg-white p-3 shadow-[0_18px_44px_rgb(47_43_37_/_0.1)]">
         <Textarea
-          className="max-h-40 min-h-14 resize-none border-0 bg-transparent px-2 py-2 text-[16px] text-[#34302a] shadow-none placeholder:text-[#77716a] focus-visible:ring-0"
+          className="max-h-40 min-h-14 resize-none border-0 bg-transparent px-3 py-2 text-[17px] text-[#34302a] shadow-none placeholder:text-[#77716a] focus-visible:ring-0 md:text-[20px]"
           disabled={isSending}
           onChange={(event) => onInputChange(event.target.value)}
           onKeyDown={(event) => {
@@ -36,13 +36,13 @@ export function ChatComposer({
               onSend();
             }
           }}
-          placeholder="给 DeepSeek 发送消息"
+          placeholder="给 DeepSeek 发送消息..."
           value={input}
         />
         <div className="mt-1 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button
-              className="size-8 rounded-lg text-[#34302a] hover:bg-[#f1efea]"
+              className="size-9 rounded-lg text-[#34302a] hover:bg-[#f1efea]"
               size="icon"
               title="添加"
               type="button"
@@ -61,7 +61,7 @@ export function ChatComposer({
               <ChevronDown className="h-3.5 w-3.5 text-[#7b756d]" />
             </Button>
             <Button
-              className="size-8 rounded-lg text-[#34302a] hover:bg-[#f1efea]"
+              className="size-9 rounded-lg text-[#34302a] hover:bg-[#f1efea]"
               size="icon"
               title="语音输入"
               type="button"
@@ -70,7 +70,7 @@ export function ChatComposer({
               <Mic className="h-4 w-4" />
             </Button>
             <Button
-              className="size-8 rounded-lg text-[#34302a] hover:bg-[#f1efea]"
+              className="size-9 rounded-lg text-[#34302a] hover:bg-[#f1efea]"
               size="icon"
               title="语音模式"
               type="button"
@@ -79,7 +79,7 @@ export function ChatComposer({
               <AudioLines className="h-4 w-4" />
             </Button>
             <Button
-              className="size-8 rounded-lg bg-[#2f2b25] text-white hover:bg-[#47413a]"
+              className="size-9 rounded-lg bg-[#2f2b25] text-white hover:bg-[#47413a]"
               disabled={!input.trim() || isSending}
               onClick={onSend}
               size="icon"

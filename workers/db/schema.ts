@@ -65,12 +65,3 @@ export type ConversationRecord = typeof conversations.$inferSelect;
 export type NewConversationRecord = typeof conversations.$inferInsert;
 export type MessageRecord = typeof messages.$inferSelect;
 export type NewMessageRecord = typeof messages.$inferInsert;
-
-export type ConversationRow = Pick<
-  ConversationRecord,
-  'id' | 'title' | 'model' | 'metadata' | 'created_at' | 'updated_at'
->;
-
-export type MessageRow = MessageRecord;
-
-export type MessageHistoryRow = Pick<MessageRecord, 'role' | 'content'>;

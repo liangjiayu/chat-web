@@ -1,6 +1,10 @@
 import { Hono } from 'hono';
 
 import { DEFAULT_MODEL } from '../constants';
+import type {
+  CreateConversationRequest,
+  RenameConversationRequest,
+} from '../contracts/conversations';
 import {
   createConversation,
   deleteConversation,
@@ -21,10 +25,8 @@ conversationsRoute.get('/conversations', async (c) => {
 });
 
 conversationsRoute.post('/conversations', async (c) => {
-  const body = (await c.req.json<{ title?: string; model?: string }>().catch(() => ({}))) as {
-    title?: string;
-    model?: string;
-  };
+  const body = (await c.req.json<CreateConversationRequest>().catch(() => ({}))) as
+    CreateConversationRequest;
   const id = crypto.randomUUID();
   const now = Date.now();
   const title = body.title?.trim() || '新对话';
@@ -36,9 +38,8 @@ conversationsRoute.post('/conversations', async (c) => {
 
 conversationsRoute.patch('/conversations/:id', async (c) => {
   const id = c.req.param('id');
-  const body = (await c.req.json<{ title?: string }>().catch(() => ({}))) as {
-    title?: string;
-  };
+  const body = (await c.req.json<RenameConversationRequest>().catch(() => ({}))) as
+    RenameConversationRequest;
   const title = body.title?.trim();
 
   if (!title) {

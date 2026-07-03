@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 
 import { DEFAULT_MODEL } from '../constants';
+import type { ChatRequest } from '../contracts/chat';
 import {
   createConversation,
   getConversation,
@@ -19,7 +20,7 @@ chatRoute.post('/chat', async (c) => {
     return jsonError('缺少 DEEPSEEK_API_KEY，请在 .dev.vars 或 Wrangler secret 中配置', 500);
   }
 
-  const body = await c.req.json<{ conversationId?: string; content?: string }>().catch(() => null);
+  const body = await c.req.json<ChatRequest>().catch(() => null);
   const content = body?.content?.trim();
 
   if (!content) {
