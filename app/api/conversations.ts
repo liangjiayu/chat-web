@@ -15,7 +15,7 @@ export function getConversations() {
 export function getConversationMessages(conversationId: string) {
   return request<ConversationMessagesResponse>({
     method: 'GET',
-    url: `/api/conversations/${conversationId}/messages`,
+    url: `/api/conversations/${conversationId}`,
   });
 }
 

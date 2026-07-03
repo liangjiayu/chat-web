@@ -223,7 +223,7 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
     }
 
     try {
-      for await (const parsed of streamChat({ conversationId: activeId, content })) {
+      for await (const parsed of streamChat({ conversation_id: activeId, content })) {
         if (parsed.event === 'meta') {
           cacheConversationId = parsed.data.conversation.id;
           cacheConversation = parsed.data.conversation;
@@ -242,7 +242,7 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
           const updateMessages = (current: Message[]) =>
             current.map((item) =>
               item.id === optimisticUserId
-                ? parsed.data.userMessage
+                ? parsed.data.user_message
                 : {
                     ...item,
                     conversation_id:
@@ -283,7 +283,7 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
               item.id === optimisticAssistantId
                 ? {
                     ...item,
-                    id: parsed.data.messageId,
+                    id: parsed.data.message_id,
                     content: parsed.data.content,
                     status: 'done',
                     metadata: parsed.data.metadata,

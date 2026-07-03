@@ -35,14 +35,14 @@ export type StreamEvent =
       event: 'meta';
       data: {
         conversation: Conversation;
-        userMessage: Message;
+        user_message: Message;
       };
     }
   | { event: 'delta'; data: { content: string } }
   | {
       event: 'done';
       data: {
-        messageId: string;
+        message_id: string;
         content: string;
         metadata: Metadata;
         created_at: number;

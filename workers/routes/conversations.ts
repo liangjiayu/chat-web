@@ -13,10 +13,9 @@ import {
   renameConversation,
 } from '../repositories/conversations';
 import { getMessages } from '../repositories/messages';
-import type { Bindings } from '../types';
 import { jsonError } from '../utils/response';
 
-export const conversationsRoute = new Hono<{ Bindings: Bindings }>();
+export const conversationsRoute = new Hono<{ Bindings: Cloudflare.Env }>();
 
 conversationsRoute.get('/conversations', async (c) => {
   const conversations = await getConversations(c.env.DB);
@@ -66,7 +65,7 @@ conversationsRoute.delete('/conversations/:id', async (c) => {
   return c.json({ ok: true });
 });
 
-conversationsRoute.get('/conversations/:id/messages', async (c) => {
+conversationsRoute.get('/conversations/:id', async (c) => {
   const id = c.req.param('id');
   const conversation = await getConversation(c.env.DB, id);
 

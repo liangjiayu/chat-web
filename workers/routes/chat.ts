@@ -8,14 +8,13 @@ import {
   touchConversation,
 } from '../repositories/conversations';
 import { createMessage, getMessageHistory } from '../repositories/messages';
-import type { Bindings } from '../types';
 import { makeTitle } from '../utils/chat';
 import { jsonError } from '../utils/response';
 import { sse } from '../utils/sse';
 
-export const chatRoute = new Hono<{ Bindings: Bindings }>();
+export const chatRoute = new Hono<{ Bindings: Cloudflare.Env }>();
 
-chatRoute.post('/chat', async (c) => {
+chatRoute.post('/chat/completion', async (c) => {
   if (!c.env.DEEPSEEK_API_KEY) {
     return jsonError('缺少 DEEPSEEK_API_KEY，请在 .dev.vars 或 Wrangler secret 中配置', 500);
   }
@@ -29,7 +28,7 @@ chatRoute.post('/chat', async (c) => {
 
   const now = Date.now();
   const model = c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
-  let conversationId = body?.conversationId;
+  let conversationId = body?.conversation_id;
   let conversation = conversationId ? await getConversation(c.env.DB, conversationId) : null;
 
   if (!conversation) {
@@ -88,7 +87,7 @@ chatRoute.post('/chat', async (c) => {
 
         sse(controller, 'meta', {
           conversation,
-          userMessage: {
+          user_message: {
             id: userMessageId,
             conversation_id: conversationId,
             role: 'user',
@@ -152,7 +151,7 @@ chatRoute.post('/chat', async (c) => {
           await touchConversation(c.env.DB, conversationId, doneAt);
 
           sse(controller, 'done', {
-            messageId: assistantMessageId,
+            message_id: assistantMessageId,
             content: assistantContent,
             metadata: {},
             created_at: doneAt,

@@ -1,7 +1,7 @@
 import type { ConversationDTO, MessageDTO, Metadata } from './models';
 
 export type ChatRequest = {
-  conversationId?: string | null;
+  conversation_id?: string | null;
   content: string;
 };
 
@@ -10,14 +10,14 @@ export type ChatStreamEvent =
       event: 'meta';
       data: {
         conversation: ConversationDTO;
-        userMessage: MessageDTO;
+        user_message: MessageDTO;
       };
     }
   | { event: 'delta'; data: { content: string } }
   | {
       event: 'done';
       data: {
-        messageId: string;
+        message_id: string;
         content: string;
         metadata: Metadata;
         created_at: number;
