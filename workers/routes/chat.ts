@@ -19,8 +19,8 @@ chatRoute.post('/chat/completion', async (c) => {
     return jsonError('缺少 DEEPSEEK_API_KEY，请在 .dev.vars 或 Wrangler secret 中配置', 500);
   }
 
-  const body = await c.req.json<ChatRequest>().catch(() => null);
-  const content = body?.content?.trim();
+  const body = await c.req.json<ChatRequest>();
+  const content = body.content?.trim();
 
   if (!content) {
     return jsonError('消息不能为空');
@@ -28,7 +28,7 @@ chatRoute.post('/chat/completion', async (c) => {
 
   const now = Date.now();
   const model = c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
-  let conversationId = body?.conversation_id;
+  let conversationId = body.conversation_id;
   let conversation = conversationId ? await getConversation(c.env.DB, conversationId) : null;
 
   if (!conversation) {

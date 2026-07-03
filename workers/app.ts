@@ -3,11 +3,20 @@ import { createRequestHandler } from 'react-router';
 
 import { chatRoute } from './routes/chat';
 import { conversationsRoute } from './routes/conversations';
+import { jsonError } from './utils/response';
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
 
 app.route('/api', conversationsRoute);
 app.route('/api', chatRoute);
+
+app.onError((error) => {
+  if (error instanceof SyntaxError) {
+    return jsonError('请求体不是合法 JSON');
+  }
+
+  return jsonError('服务器内部错误', 500);
+});
 
 app.get('*', (c) => {
   const requestHandler = createRequestHandler(

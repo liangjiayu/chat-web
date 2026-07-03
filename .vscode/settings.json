@@ -1,5 +1,12 @@
 {
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit",
+    "source.removeUnusedImports": "explicit"
+  },
   "files.associations": {
     "wrangler.json": "jsonc"
-  }
+  },
+  "cSpell.words": ["DEEPSEEK"]
 }
