@@ -4,4 +4,5 @@ export default [
   index('routes/index.tsx'),
   route('chat', 'routes/chat.tsx', { id: 'chat' }),
   route('chat/:id', 'routes/chat-detail.tsx', { id: 'chat-detail' }),
+  route('*', 'routes/not-found.tsx', { id: 'not-found' }),
 ] satisfies RouteConfig;

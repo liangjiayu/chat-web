@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "react-router dev",
     "build": "react-router build",
-    "typecheck": "wrangler types && react-router typegen && tsc -p tsconfig.json",
+    "cf-typegen": "wrangler types",
+    "typecheck": "react-router typegen && tsc",
     "lint": "oxlint .",
-    "format": "oxfmt . --write",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt .",
     "prepare": "husky",
     "db:migrate:local": "wrangler d1 migrations apply chat-web-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply chat-web-db --remote",

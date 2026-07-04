@@ -1,3 +1,4 @@
+import type { Conversation } from '@contracts/models';
 import {
   Archive,
   Briefcase,
@@ -20,7 +21,6 @@ import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { Conversation } from '@contracts/models';
 
 import type { ConversationGroup } from './utils';
 
@@ -206,7 +206,9 @@ export function ConversationSidebar({
         </div>
       </div>
 
-      <div className={cn('hidden h-full w-16 flex-col items-center py-3', !sidebarOpen && 'md:flex')}>
+      <div
+        className={cn('hidden h-full w-16 flex-col items-center py-3', !sidebarOpen && 'md:flex')}
+      >
         <Button
           className="size-8 text-[#33312e] hover:bg-[#efefed]"
           onClick={onToggleSidebar}

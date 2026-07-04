@@ -1,5 +1,5 @@
-import { asc, eq } from 'drizzle-orm';
 import type { Message, MessageHistory } from '@contracts/models';
+import { asc, eq } from 'drizzle-orm';
 
 import { createDb } from '../db/client';
 import { messages } from '../db/schema';

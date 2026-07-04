@@ -1,8 +1,8 @@
-import { Hono } from 'hono';
 import type {
   CreateConversationRequest,
   RenameConversationRequest,
 } from '@contracts/conversations';
+import { Hono } from 'hono';
 
 import { DEFAULT_MODEL } from '../constants';
 import {

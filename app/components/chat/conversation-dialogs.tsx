@@ -1,3 +1,5 @@
+import type { Conversation } from '@contracts/models';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +21,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import type { Conversation } from '@contracts/models';
 
 type ConversationDialogsProps = {
   conversationToDelete: Conversation | null;
