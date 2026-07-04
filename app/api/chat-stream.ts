@@ -1,6 +1,6 @@
-import type { StreamEvent } from '@/types/chat';
+import type { ChatRequest, ChatStreamEvent } from '@contracts/chat';
 
-function parseSseBlock(block: string): StreamEvent | null {
+function parseSseBlock(block: string): ChatStreamEvent | null {
   let event = 'message';
   let data = '';
 
@@ -18,13 +18,10 @@ function parseSseBlock(block: string): StreamEvent | null {
     return null;
   }
 
-  return { event, data: JSON.parse(data) } as StreamEvent;
+  return { event, data: JSON.parse(data) } as ChatStreamEvent;
 }
 
-export async function* streamChat(payload: {
-  conversation_id: string;
-  prompt: string;
-}): AsyncGenerator<StreamEvent> {
+export async function* streamChat(payload: ChatRequest): AsyncGenerator<ChatStreamEvent> {
   const response = await fetch('/api/chat/completion', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

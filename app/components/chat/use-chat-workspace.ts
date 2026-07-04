@@ -12,11 +12,10 @@ import {
   useRenameConversationMutation,
 } from '@/queries/conversations';
 import type {
-  Conversation,
   ConversationListResponse,
   ConversationMessagesResponse,
-  Message,
-} from '@/types/chat';
+} from '@contracts/conversations';
+import type { Conversation, Message } from '@contracts/models';
 
 import { groupConversations, sortConversationsByUpdatedAt } from './utils';
 

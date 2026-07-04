@@ -20,7 +20,7 @@ import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { Conversation } from '@/types/chat';
+import type { Conversation } from '@contracts/models';
 
 import type { ConversationGroup } from './utils';
 

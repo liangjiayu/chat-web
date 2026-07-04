@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import type { Conversation } from '@/types/chat';
+import type { Conversation } from '@contracts/models';
 
 type ConversationDialogsProps = {
   conversationToDelete: Conversation | null;

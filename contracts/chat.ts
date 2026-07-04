@@ -1,4 +1,4 @@
-import type { MessageDTO } from './models';
+import type { Message } from './models';
 
 export type ChatRequest = {
   conversation_id: string;
@@ -10,7 +10,7 @@ export type ChatStreamEvent =
   | {
       event: 'done';
       data: {
-        message: Pick<MessageDTO, 'id' | 'metadata' | 'created_at' | 'updated_at'>;
+        message: Pick<Message, 'id' | 'metadata' | 'created_at' | 'updated_at'>;
       };
     }
   | { event: 'error'; data: { message: string } };

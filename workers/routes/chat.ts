@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
+import type { ChatRequest } from '@contracts/chat';
 
 import { DEFAULT_MODEL } from '../constants';
-import type { ChatRequest } from '../contracts/chat';
 import {
   createConversation,
   getConversation,

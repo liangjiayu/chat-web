@@ -9,7 +9,8 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": ["./app/*"],
+      "@contracts/*": ["./contracts/*"]
     },
     "types": ["@cloudflare/workers-types/2023-07-01"]
   }

@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
-
-import { DEFAULT_MODEL } from '../constants';
 import type {
   CreateConversationRequest,
   RenameConversationRequest,
-} from '../contracts/conversations';
+} from '@contracts/conversations';
+
+import { DEFAULT_MODEL } from '../constants';
 import {
   createConversation,
   deleteConversation,

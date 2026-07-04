@@ -2,7 +2,7 @@ import { ChevronDown, FileText, Menu } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { Conversation } from '@/types/chat';
+import type { Conversation } from '@contracts/models';
 
 type ChatHeaderProps = {
   activeConversation: Conversation | null;

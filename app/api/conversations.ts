@@ -1,9 +1,13 @@
-import { request } from '@/lib/request';
 import type {
-  Conversation,
   ConversationListResponse,
   ConversationMessagesResponse,
-} from '@/types/chat';
+  ConversationResponse,
+  CreateConversationRequest,
+  CreateConversationResponse,
+  DeleteConversationResponse,
+} from '@contracts/conversations';
+
+import { request } from '@/lib/request';
 
 export function getConversations() {
   return request<ConversationListResponse>({
@@ -19,8 +23,8 @@ export function getConversationMessages(conversationId: string) {
   });
 }
 
-export function createConversation(payload: { title: string; model?: string }) {
-  return request<{ conversation: Conversation }>({
+export function createConversation(payload: CreateConversationRequest) {
+  return request<CreateConversationResponse>({
     method: 'POST',
     url: '/api/conversations',
     data: payload,
@@ -28,7 +32,7 @@ export function createConversation(payload: { title: string; model?: string }) {
 }
 
 export function renameConversation(conversationId: string, title: string) {
-  return request<Conversation>({
+  return request<ConversationResponse>({
     method: 'PATCH',
     url: `/api/conversations/${conversationId}`,
     data: { title },
@@ -36,7 +40,7 @@ export function renameConversation(conversationId: string, title: string) {
 }
 
 export function deleteConversation(conversationId: string) {
-  return request<{ success: boolean }>({
+  return request<DeleteConversationResponse>({
     method: 'DELETE',
     url: `/api/conversations/${conversationId}`,
   });

@@ -1,6 +1,6 @@
 import { asc, eq } from 'drizzle-orm';
+import type { Message, MessageHistory } from '@contracts/models';
 
-import type { MessageDTO, MessageHistoryDTO } from '../contracts/models';
 import { createDb } from '../db/client';
 import { messages } from '../db/schema';
 
@@ -17,7 +17,7 @@ export async function createMessage(
   input: {
     id: string;
     conversationId: string;
-    role: MessageDTO['role'];
+    role: Message['role'];
     content: string;
     model: string | null;
     status: string;
@@ -51,5 +51,5 @@ export async function getMessageHistory(db: D1Database, conversationId: string) 
     .orderBy(asc(messages.created_at))
     .limit(40);
 
-  return history satisfies MessageHistoryDTO[];
+  return history satisfies MessageHistory[];
 }

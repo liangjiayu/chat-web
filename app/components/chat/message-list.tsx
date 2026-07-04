@@ -2,7 +2,7 @@ import { Copy, Loader2, RotateCcw, Sparkles, ThumbsDown, ThumbsUp } from 'lucide
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
-import type { Message } from '@/types/chat';
+import type { Message } from '@contracts/models';
 
 import { MessageContent } from './message-content';
 

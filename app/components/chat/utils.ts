@@ -1,4 +1,4 @@
-import type { Conversation } from '@/types/chat';
+import type { Conversation } from '@contracts/models';
 
 export type ConversationGroup = {
   label: string;
