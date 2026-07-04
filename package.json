@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "react-router dev",
     "build": "react-router build",
-    "typecheck": "wrangler types && react-router typegen && tsc -b",
+    "typecheck": "wrangler types && react-router typegen && tsc -p tsconfig.json",
     "lint": "oxlint .",
     "format": "oxfmt . --write",
     "db:migrate:local": "wrangler d1 migrations apply chat-web-db --local",
@@ -32,7 +32,6 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.15.3",
-    "@cloudflare/workers-types": "^4.20260507.1",
     "@react-router/dev": "7.9.6",
     "@tailwindcss/vite": "4.1.17",
     "@types/node": "24.10.1",
