@@ -1,18 +1,44 @@
-import { Hono } from 'hono';
 import type { ChatRequest } from '@contracts/chat';
+import { Hono } from 'hono';
 
 import { DEFAULT_MODEL } from '../constants';
 import {
   createConversation,
   getConversation,
   touchConversation,
+  updateConversationTitleIfCurrent,
 } from '../repositories/conversations';
 import { createMessage, getMessageHistory } from '../repositories/messages';
-import { makeTitle } from '../utils/chat';
+import { makeTitle, makeTitleMessages, parseTitleContent } from '../utils/chat';
 import { jsonError } from '../utils/response';
 import { sse } from '../utils/sse';
 
 export const chatRoute = new Hono<{ Bindings: Cloudflare.Env }>();
+
+async function generateConversationTitle(input: { apiKey: string; model: string; prompt: string }) {
+  const response = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${input.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: input.model,
+      messages: makeTitleMessages(input.prompt),
+      stream: false,
+    }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+
+  return parseTitleContent(data.choices?.[0]?.message?.content ?? '');
+}
 
 chatRoute.post('/chat/completion', async (c) => {
   if (!c.env.DEEPSEEK_API_KEY) {
@@ -34,11 +60,15 @@ chatRoute.post('/chat/completion', async (c) => {
   const now = Date.now();
   const model = c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
   let conversation = await getConversation(c.env.DB, conversationId);
+  let isNewConversation = false;
+  let initialTitle = conversation?.title ?? '';
 
   if (!conversation) {
+    initialTitle = makeTitle();
+    isNewConversation = true;
     conversation = await createConversation(c.env.DB, {
       id: conversationId,
-      title: makeTitle(prompt),
+      title: initialTitle,
       model,
       now,
     });
@@ -78,6 +108,14 @@ chatRoute.post('/chat/completion', async (c) => {
     const detail = await upstream.text().catch(() => '');
     return jsonError(detail || 'DeepSeek 请求失败', upstream.status || 502);
   }
+
+  const titlePromise = isNewConversation
+    ? generateConversationTitle({
+        apiKey: c.env.DEEPSEEK_API_KEY,
+        model,
+        prompt,
+      }).catch(() => null)
+    : Promise.resolve(null);
 
   return new Response(
     new ReadableStream({
@@ -137,6 +175,21 @@ chatRoute.post('/chat/completion', async (c) => {
             now: doneAt,
           });
           await touchConversation(c.env.DB, conversationId, doneAt);
+
+          if (isNewConversation) {
+            const title = (await titlePromise) ?? initialTitle;
+
+            if (title !== initialTitle) {
+              await updateConversationTitleIfCurrent(c.env.DB, {
+                id: conversationId,
+                title,
+                currentTitle: initialTitle,
+                now: Date.now(),
+              });
+            }
+
+            sse(controller, 'title', { content: title });
+          }
 
           sse(controller, 'done', {
             message: {

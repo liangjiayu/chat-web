@@ -1,5 +1,5 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { Conversation } from '@contracts/models';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { LOCAL_USER_ID } from '../constants';
 import { createDb } from '../db/client';
@@ -81,6 +81,29 @@ export async function renameConversation(
     .where(
       and(
         eq(conversations.id, input.id),
+        eq(conversations.user_id, LOCAL_USER_ID),
+        isNull(conversations.deleted_at),
+      ),
+    )
+    .run();
+}
+
+export async function updateConversationTitleIfCurrent(
+  db: D1Database,
+  input: {
+    id: string;
+    title: string;
+    currentTitle: string;
+    now: number;
+  },
+) {
+  return createDb(db)
+    .update(conversations)
+    .set({ title: input.title, updated_at: input.now })
+    .where(
+      and(
+        eq(conversations.id, input.id),
+        eq(conversations.title, input.currentTitle),
         eq(conversations.user_id, LOCAL_USER_ID),
         isNull(conversations.deleted_at),
       ),

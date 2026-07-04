@@ -7,6 +7,7 @@ export type ChatRequest = {
 
 export type ChatStreamEvent =
   | { event: 'message'; data: { message: { v: string } } }
+  | { event: 'title'; data: { content: string } }
   | {
       event: 'done';
       data: {

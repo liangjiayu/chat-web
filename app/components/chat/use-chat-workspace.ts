@@ -1,3 +1,8 @@
+import type {
+  ConversationListResponse,
+  ConversationMessagesResponse,
+} from '@contracts/conversations';
+import type { Conversation, Message } from '@contracts/models';
 import { useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { useNavigate } from 'react-router';
@@ -11,11 +16,6 @@ import {
   useMessagesQuery,
   useRenameConversationMutation,
 } from '@/queries/conversations';
-import type {
-  ConversationListResponse,
-  ConversationMessagesResponse,
-} from '@contracts/conversations';
-import type { Conversation, Message } from '@contracts/models';
 
 import { groupConversations, sortConversationsByUpdatedAt } from './utils';
 
@@ -70,6 +70,22 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
         conversation: current?.conversation ?? conversation,
         messages: updater(current?.messages ?? []),
       }),
+    );
+  }
+
+  function setConversationTitleCache(conversationId: string, title: string) {
+    setConversationsCache((current) =>
+      current.map((item) => (item.id === conversationId ? { ...item, title } : item)),
+    );
+    queryClient.setQueryData<ConversationMessagesResponse>(
+      messageKeys.detail(conversationId),
+      (current) =>
+        current
+          ? {
+              ...current,
+              conversation: { ...current.conversation, title },
+            }
+          : current,
     );
   }
 
@@ -267,10 +283,15 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
                 : item,
             ),
           );
+          setIsSending(false);
           void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
           void queryClient.invalidateQueries({
             queryKey: messageKeys.detail(cacheConversationId),
           });
+        }
+
+        if (parsed.event === 'title') {
+          setConversationTitleCache(cacheConversationId, parsed.data.content);
         }
 
         if (parsed.event === 'error') {
