@@ -28,5 +28,5 @@
     "unicorn/no-null": "off",
     "import/no-unassigned-import": "off"
   },
-  "ignorePatterns": ["app/services/**"]
+  "ignorePatterns": []
 }

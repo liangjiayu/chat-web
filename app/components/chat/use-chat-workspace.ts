@@ -7,7 +7,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { useNavigate } from 'react-router';
 
-import { streamChat } from '@/api/chat-stream';
 import {
   conversationKeys,
   messageKeys,
@@ -16,6 +15,7 @@ import {
   useMessagesQuery,
   useRenameConversationMutation,
 } from '@/queries/conversations';
+import { streamChat } from '@/services/chat-stream';
 
 import { groupConversations, sortConversationsByUpdatedAt } from './utils';
 
