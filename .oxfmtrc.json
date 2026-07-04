@@ -11,5 +11,5 @@
     "stylesheet": "./app/styles/index.css",
     "functions": ["cn", "cva"]
   },
-  "ignorePatterns": ["app/services/**", "worker-configuration.d.ts"]
+  "ignorePatterns": ["worker-configuration.d.ts"]
 }

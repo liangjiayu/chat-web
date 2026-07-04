@@ -9,6 +9,7 @@
     "typecheck": "wrangler types && react-router typegen && tsc -p tsconfig.json",
     "lint": "oxlint .",
     "format": "oxfmt . --write",
+    "prepare": "husky",
     "db:migrate:local": "wrangler d1 migrations apply chat-web-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply chat-web-db --remote",
     "deploy": "pnpm run build && wrangler deploy"
@@ -38,6 +39,8 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "drizzle-kit": "^0.31.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "oxfmt": "^0.57.0",
     "oxlint": "^1.72.0",
     "tailwindcss": "4.1.17",
@@ -45,6 +48,9 @@
     "vite": "^7.0.0",
     "vite-tsconfig-paths": "5.1.4",
     "wrangler": "4.88.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,json,css,md}": "oxfmt"
   },
   "cloudflare": {
     "label": "React Router + Hono Fullstack App",
