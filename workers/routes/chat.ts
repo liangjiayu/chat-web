@@ -1,7 +1,7 @@
 import type { ChatRequest } from '@contracts/chat';
 import { Hono } from 'hono';
 
-import { DEFAULT_MODEL } from '../constants';
+import { DEEPSEEK_CHAT_COMPLETIONS_URL, DEFAULT_MODEL } from '../constants';
 import {
   createConversation,
   getConversation,
@@ -16,7 +16,7 @@ import { sse } from '../utils/sse';
 export const chatRoute = new Hono<{ Bindings: Cloudflare.Env }>();
 
 async function generateConversationTitle(input: { apiKey: string; model: string; prompt: string }) {
-  const response = await fetch('https://api.deepseek.com/chat/completions', {
+  const response = await fetch(DEEPSEEK_CHAT_COMPLETIONS_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${input.apiKey}`,
@@ -40,6 +40,14 @@ async function generateConversationTitle(input: { apiKey: string; model: string;
   return parseTitleContent(data.choices?.[0]?.message?.content ?? '');
 }
 
+/*
+ * 核心流程：
+ * 1. 校验请求参数和 DeepSeek 配置。
+ * 2. 如果会话不存在，则用前端传入的会话 ID 创建新会话。
+ * 3. 先保存用户消息，再读取会话历史请求 DeepSeek 流式接口。
+ * 4. 将 DeepSeek 的增量内容转成前端约定的 SSE 事件。
+ * 5. 流结束后保存助手完整回复，并在新会话场景下生成标题。
+ */
 chatRoute.post('/chat/completion', async (c) => {
   if (!c.env.DEEPSEEK_API_KEY) {
     return jsonError('缺少 DEEPSEEK_API_KEY，请在 .dev.vars 或 Wrangler secret 中配置', 500);
@@ -91,7 +99,7 @@ chatRoute.post('/chat/completion', async (c) => {
   await touchConversation(c.env.DB, conversationId, now);
 
   const history = await getMessageHistory(c.env.DB, conversationId);
-  const upstream = await fetch('https://api.deepseek.com/chat/completions', {
+  const upstream = await fetch(DEEPSEEK_CHAT_COMPLETIONS_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${c.env.DEEPSEEK_API_KEY}`,
@@ -127,10 +135,10 @@ chatRoute.post('/chat/completion', async (c) => {
         let assistantContent = '';
 
         try {
-          const readNextChunk = async (): Promise<void> => {
+          while (true) {
             const { value, done } = await reader.read();
             if (done) {
-              return;
+              break;
             }
 
             buffer += decoder.decode(value, { stream: true });
@@ -158,11 +166,7 @@ chatRoute.post('/chat/completion', async (c) => {
                 sse(controller, 'message', { message: { v: delta } });
               }
             }
-
-            await readNextChunk();
-          };
-
-          await readNextChunk();
+          }
 
           const doneAt = Date.now();
           await createMessage(c.env.DB, {

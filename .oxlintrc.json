@@ -26,7 +26,8 @@
     "typescript/consistent-type-imports": ["error"],
     "unicorn/filename-case": ["warn", { "case": "kebabCase" }],
     "unicorn/no-null": "off",
-    "import/no-unassigned-import": "off"
+    "import/no-unassigned-import": "off",
+    "no-await-in-loop": "off"
   },
   "ignorePatterns": []
 }
