@@ -14,6 +14,10 @@ import { createQueryClient } from './lib/query-client';
 
 import './styles/index.css';
 
+export function links() {
+  return [{ href: '/logo.svg', rel: 'icon', type: 'image/svg+xml' }];
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN">

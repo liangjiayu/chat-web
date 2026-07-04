@@ -1,6 +1,7 @@
 import { Code2, Coffee, GraduationCap, Pencil, Sparkles } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { AppLogo } from '@/components/app-logo';
 import { Button } from '@/components/ui/button';
 
 type EmptyChatProps = {
@@ -11,7 +12,7 @@ export function EmptyChat({ composer }: EmptyChatProps) {
   return (
     <div className="flex flex-1 flex-col items-center">
       <div className="mb-8 flex items-center gap-4 text-center">
-        <Sparkles className="h-9 w-9 shrink-0 text-[#d85f3d]" />
+        <AppLogo className="h-10 w-10" />
         <h2 className="font-serif text-[34px] leading-tight font-semibold text-[#2f2b25] md:text-[44px]">
           使用快速模式开始对话
         </h2>

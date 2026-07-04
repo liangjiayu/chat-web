@@ -1,8 +1,18 @@
+## 技术栈
+
+- 语言与类型：TypeScript
+- 前端框架：React 19、React Router 7
+- 构建工具：Vite 7
+- 运行环境：Cloudflare Workers、Wrangler
+- 服务端框架：Hono
+- 数据库：Cloudflare D1、Drizzle ORM
+- 数据请求与状态：TanStack Query、Zustand
+- UI 与样式：shadcn、Radix UI、lucide-react、Tailwind CSS 4
+- AI 服务：DeepSeek API
+- 代码规范：oxlint、oxfmt、Husky、lint-staged
+- 包管理器：pnpm
+
 ## 开发规范
-
-### 改动范围
-
-- 用户明确要求开发前端或 Workers 时，只修改对应端的代码；除非用户明确要求联动调整，否则不要同步修改另一端
 
 ### 注释规范
 

@@ -1,51 +1,51 @@
 # Chat Web
 
-DeepSeek conversation web app built with React Router, Hono, Cloudflare Workers,
-Cloudflare D1, Tailwind CSS, and shadcn/ui-style components.
+基于 React Router、Hono、Cloudflare Workers、Cloudflare D1 和 DeepSeek 的对话 Web 应用。
 
-## Setup
+## 快速开始
 
-Install dependencies with pnpm:
+确保本地已安装 Node.js 和 pnpm。
+
+安装依赖：
 
 ```sh
 pnpm install
 ```
 
-Create a local env file from the example and set your DeepSeek key:
+创建本地环境变量文件：
 
 ```sh
 cp .dev.vars.example .dev.vars
 ```
 
-`DEEPSEEK_API_KEY` must stay in `.dev.vars` locally or Wrangler secrets in
-production. Do not commit real API keys.
+在 `.dev.vars` 中配置 DeepSeek API Key：
 
-Apply the local D1 migration:
+```sh
+DEEPSEEK_API_KEY=sk-your-deepseek-api-key
+```
+
+初始化本地 D1 数据库：
 
 ```sh
 pnpm run db:migrate:local
 ```
 
-Start the dev server:
+启动开发服务：
 
 ```sh
 pnpm dev
 ```
 
-## Scripts
+启动后访问终端输出的本地地址即可开发调试。
 
-- `pnpm dev` starts the React Router dev server.
-- `pnpm run typecheck` regenerates Worker/React Router types and checks TS.
-- `pnpm run db:migrate:local` applies D1 migrations locally.
-- `pnpm run db:migrate:remote` applies D1 migrations in production.
-- `pnpm run build` builds the app.
-- `pnpm run deploy` deploys the Worker after a production build.
+## 常用脚本
 
-## Data Model
-
-- `conversations` stores chat sessions: title, owner, model, timestamps, and
-  soft-delete status.
-- `messages` stores each user/assistant message with role, content, model,
-  status, token placeholders, and creation time.
-
-The first version is a single-user app using `local-user`.
+- `pnpm dev`：启动本地开发服务。
+- `pnpm run build`：构建生产产物。
+- `pnpm run typecheck`：生成类型并执行 TypeScript 检查。
+- `pnpm run lint`：执行代码检查。
+- `pnpm run lint:fix`：自动修复可修复的代码检查问题。
+- `pnpm run format`：格式化代码。
+- `pnpm run db:migrate:local`：执行本地 D1 数据库迁移。
+- `pnpm run db:migrate:remote`：执行远程 D1 数据库迁移。
+- `pnpm run deploy`：构建并部署到 Cloudflare Workers。
