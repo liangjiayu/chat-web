@@ -164,9 +164,9 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
   }
 
   async function sendMessage() {
-    const content = input.trim();
+    const prompt = input.trim();
 
-    if (!content || isSending) {
+    if (!prompt || isSending) {
       return;
     }
 
@@ -176,7 +176,7 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
 
     const optimisticUserId = `local-user-${Date.now()}`;
     const optimisticAssistantId = `local-assistant-${Date.now()}`;
-    const optimisticConversationId = activeId ?? 'pending';
+    const optimisticConversationId = activeId ?? crypto.randomUUID();
     const createdAt = Date.now();
     const fallbackConversation: Conversation = activeConversation ?? {
       id: optimisticConversationId,
@@ -191,7 +191,7 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
         id: optimisticUserId,
         conversation_id: optimisticConversationId,
         role: 'user',
-        content,
+        content: prompt,
         model: activeConversation?.model ?? 'deepseek-v4-flash',
         status: 'done',
         metadata: {},
@@ -210,8 +210,9 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
         updated_at: createdAt,
       },
     ];
-    let cacheConversationId = activeId;
-    let cacheConversation = fallbackConversation;
+    const cacheConversationId = optimisticConversationId;
+    const cacheConversation = fallbackConversation;
+    const isNewConversation = !activeId;
 
     if (activeId) {
       setMessagesCache(activeId, fallbackConversation, (current) => [
@@ -219,81 +220,58 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
         ...optimisticMessages,
       ]);
     } else {
+      queryClient.setQueryData<ConversationMessagesResponse>(
+        messageKeys.detail(optimisticConversationId),
+        {
+          conversation: fallbackConversation,
+          messages: optimisticMessages,
+        },
+      );
+      setConversationsCache((current) =>
+        sortConversationsByUpdatedAt([fallbackConversation, ...current]),
+      );
       setPendingMessages(optimisticMessages);
+      void navigate(`/chat/${optimisticConversationId}`, { replace: true });
     }
 
     try {
-      for await (const parsed of streamChat({ conversation_id: activeId, content })) {
-        if (parsed.event === 'meta') {
-          cacheConversationId = parsed.data.conversation.id;
-          cacheConversation = parsed.data.conversation;
-          void navigate(`/chat/${parsed.data.conversation.id}`, { replace: !activeId });
-          setConversationsCache((current) => {
-            const exists = current.some((item) => item.id === parsed.data.conversation.id);
-            const next = exists
-              ? current.map((item) =>
-                  item.id === parsed.data.conversation.id ? parsed.data.conversation : item,
-                )
-              : [parsed.data.conversation, ...current];
-
-            return sortConversationsByUpdatedAt(next);
-          });
-
-          const updateMessages = (current: Message[]) =>
-            current.map((item) =>
-              item.id === optimisticUserId
-                ? parsed.data.user_message
-                : {
-                    ...item,
-                    conversation_id:
-                      item.conversation_id === 'pending'
-                        ? parsed.data.conversation.id
-                        : item.conversation_id,
-                  },
-            );
-
-          if (activeId) {
-            setMessagesCache(activeId, parsed.data.conversation, updateMessages);
-          } else {
-            const nextMessages = updateMessages(pendingMessages ?? optimisticMessages);
-            queryClient.setQueryData<ConversationMessagesResponse>(
-              messageKeys.detail(parsed.data.conversation.id),
-              {
-                conversation: parsed.data.conversation,
-                messages: nextMessages,
-              },
-            );
-            setPendingMessages(null);
-          }
+      for await (const parsed of streamChat({
+        conversation_id: optimisticConversationId,
+        prompt,
+      })) {
+        if (isNewConversation) {
+          setPendingMessages(null);
         }
 
-        if (parsed.event === 'delta' && cacheConversationId) {
+        if (parsed.event === 'message') {
           setMessagesCache(cacheConversationId, cacheConversation, (current) =>
             current.map((item) =>
               item.id === optimisticAssistantId
-                ? { ...item, content: item.content + parsed.data.content }
+                ? { ...item, content: item.content + parsed.data.message.v }
                 : item,
             ),
           );
         }
 
-        if (parsed.event === 'done' && cacheConversationId) {
+        if (parsed.event === 'done') {
           setMessagesCache(cacheConversationId, cacheConversation, (current) =>
             current.map((item) =>
               item.id === optimisticAssistantId
                 ? {
                     ...item,
-                    id: parsed.data.message_id,
-                    content: parsed.data.content,
+                    id: parsed.data.message.id,
                     status: 'done',
-                    metadata: parsed.data.metadata,
-                    created_at: parsed.data.created_at,
-                    updated_at: parsed.data.updated_at,
+                    metadata: parsed.data.message.metadata,
+                    created_at: parsed.data.message.created_at,
+                    updated_at: parsed.data.message.updated_at,
                   }
                 : item,
             ),
           );
           void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
+          void queryClient.invalidateQueries({
+            queryKey: messageKeys.detail(cacheConversationId),
+          });
         }
 
         if (parsed.event === 'error') {
@@ -303,13 +281,13 @@ export function useChatWorkspace({ activeId }: UseChatWorkspaceOptions) {
     } catch (reason) {
       setActionError(reason instanceof Error ? reason.message : '发送失败');
 
-      if (cacheConversationId) {
-        setMessagesCache(cacheConversationId, cacheConversation, (current) =>
-          current.filter(
-            (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,
-          ),
-        );
-      } else {
+      setMessagesCache(cacheConversationId, cacheConversation, (current) =>
+        current.filter(
+          (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,
+        ),
+      );
+
+      if (isNewConversation) {
         setPendingMessages((current) =>
           (current ?? []).filter(
             (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,

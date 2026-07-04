@@ -22,8 +22,8 @@ function parseSseBlock(block: string): StreamEvent | null {
 }
 
 export async function* streamChat(payload: {
-  conversation_id: string | null;
-  content: string;
+  conversation_id: string;
+  prompt: string;
 }): AsyncGenerator<StreamEvent> {
   const response = await fetch('/api/chat/completion', {
     method: 'POST',

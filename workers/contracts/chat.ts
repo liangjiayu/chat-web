@@ -1,27 +1,16 @@
-import type { ConversationDTO, MessageDTO, Metadata } from './models';
+import type { MessageDTO } from './models';
 
 export type ChatRequest = {
-  conversation_id?: string | null;
-  content: string;
+  conversation_id: string;
+  prompt: string;
 };
 
 export type ChatStreamEvent =
-  | {
-      event: 'meta';
-      data: {
-        conversation: ConversationDTO;
-        user_message: MessageDTO;
-      };
-    }
-  | { event: 'delta'; data: { content: string } }
+  | { event: 'message'; data: { message: { v: string } } }
   | {
       event: 'done';
       data: {
-        message_id: string;
-        content: string;
-        metadata: Metadata;
-        created_at: number;
-        updated_at: number;
+        message: Pick<MessageDTO, 'id' | 'metadata' | 'created_at' | 'updated_at'>;
       };
     }
   | { event: 'error'; data: { message: string } };

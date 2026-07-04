@@ -20,28 +20,31 @@ chatRoute.post('/chat/completion', async (c) => {
   }
 
   const body = await c.req.json<ChatRequest>();
-  const content = body.content?.trim();
+  const conversationId = body.conversation_id?.trim();
+  const prompt = body.prompt?.trim();
 
-  if (!content) {
+  if (!conversationId) {
+    return jsonError('会话 ID 不能为空');
+  }
+
+  if (!prompt) {
     return jsonError('消息不能为空');
   }
 
   const now = Date.now();
   const model = c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
-  let conversationId = body.conversation_id;
-  let conversation = conversationId ? await getConversation(c.env.DB, conversationId) : null;
+  let conversation = await getConversation(c.env.DB, conversationId);
 
   if (!conversation) {
-    conversationId = crypto.randomUUID();
     conversation = await createConversation(c.env.DB, {
       id: conversationId,
-      title: makeTitle(content),
+      title: makeTitle(prompt),
       model,
       now,
     });
   }
 
-  if (!conversation || !conversationId) {
+  if (!conversation) {
     return jsonError('无法创建会话', 500);
   }
 
@@ -50,7 +53,7 @@ chatRoute.post('/chat/completion', async (c) => {
     id: userMessageId,
     conversationId,
     role: 'user',
-    content,
+    content: prompt,
     model,
     status: 'done',
     now,
@@ -66,7 +69,7 @@ chatRoute.post('/chat/completion', async (c) => {
     },
     body: JSON.stringify({
       model,
-      messages: history ?? [{ role: 'user', content }],
+      messages: history ?? [{ role: 'user', content: prompt }],
       stream: true,
     }),
   });
@@ -84,21 +87,6 @@ chatRoute.post('/chat/completion', async (c) => {
         const reader = upstream.body!.getReader();
         let buffer = '';
         let assistantContent = '';
-
-        sse(controller, 'meta', {
-          conversation,
-          user_message: {
-            id: userMessageId,
-            conversation_id: conversationId,
-            role: 'user',
-            content,
-            model,
-            status: 'done',
-            metadata: {},
-            created_at: now,
-            updated_at: now,
-          },
-        });
 
         try {
           const readNextChunk = async (): Promise<void> => {
@@ -129,7 +117,7 @@ chatRoute.post('/chat/completion', async (c) => {
 
               if (delta) {
                 assistantContent += delta;
-                sse(controller, 'delta', { content: delta });
+                sse(controller, 'message', { message: { v: delta } });
               }
             }
 
@@ -151,11 +139,12 @@ chatRoute.post('/chat/completion', async (c) => {
           await touchConversation(c.env.DB, conversationId, doneAt);
 
           sse(controller, 'done', {
-            message_id: assistantMessageId,
-            content: assistantContent,
-            metadata: {},
-            created_at: doneAt,
-            updated_at: doneAt,
+            message: {
+              id: assistantMessageId,
+              metadata: {},
+              created_at: doneAt,
+              updated_at: doneAt,
+            },
           });
         } catch (error) {
           sse(controller, 'error', {

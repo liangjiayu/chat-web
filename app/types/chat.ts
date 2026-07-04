@@ -29,22 +29,11 @@ export type ConversationMessagesResponse = {
 };
 
 export type StreamEvent =
-  | {
-      event: 'meta';
-      data: {
-        conversation: Conversation;
-        user_message: Message;
-      };
-    }
-  | { event: 'delta'; data: { content: string } }
+  | { event: 'message'; data: { message: { v: string } } }
   | {
       event: 'done';
       data: {
-        message_id: string;
-        content: string;
-        metadata: Metadata;
-        created_at: number;
-        updated_at: number;
+        message: Pick<Message, 'id' | 'metadata' | 'created_at' | 'updated_at'>;
       };
     }
   | { event: 'error'; data: { message: string } };
