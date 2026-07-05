@@ -1,6 +1,6 @@
-# Chat Web
+# Chatty
 
-基于 React Router、Hono、Cloudflare Workers、Cloudflare D1 和 DeepSeek 的对话 Web 应用。
+Chatty 是基于 React Router、Hono、Cloudflare Workers、Cloudflare D1 和 DeepSeek 的对话 Web 应用。
 
 ## 快速开始
 

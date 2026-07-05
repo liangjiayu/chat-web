@@ -65,7 +65,7 @@ export function ConversationSidebar({
         <div className="flex h-14 shrink-0 items-center justify-between px-3">
           <div className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-normal text-[#2f2b25]">
             <AppLogo className="h-8 w-8" />
-            <span>DeepSeek</span>
+            <span>Chatty</span>
           </div>
           <div className="flex items-center gap-1">
             <Button

@@ -36,7 +36,7 @@ export function ChatComposer({
               onSend();
             }
           }}
-          placeholder="给 DeepSeek 发送消息..."
+          placeholder="给 Chatty 发送消息..."
           value={input}
         />
         <div className="mt-1 flex items-center justify-between">

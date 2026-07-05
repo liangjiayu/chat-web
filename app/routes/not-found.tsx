@@ -4,10 +4,7 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 
 export function meta() {
-  return [
-    { title: '页面未找到 - DeepSeek Chat' },
-    { name: 'description', content: '请求的页面不存在' },
-  ];
+  return [{ title: '页面未找到 - Chatty' }, { name: 'description', content: '请求的页面不存在' }];
 }
 
 export function loader() {

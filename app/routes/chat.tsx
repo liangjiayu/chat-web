@@ -9,10 +9,7 @@ import {
 } from '@/components/chat';
 
 export function meta() {
-  return [
-    { title: 'DeepSeek Chat' },
-    { name: 'description', content: 'DeepSeek conversation workspace' },
-  ];
+  return [{ title: 'Chatty' }, { name: 'description', content: 'Chatty conversation workspace' }];
 }
 
 export default function Chat() {

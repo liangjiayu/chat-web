@@ -1,7 +1,7 @@
 {
   "name": "chat-web",
   "private": true,
-  "description": "Chat web app powered by React Router and Cloudflare Workers",
+  "description": "Chatty chat app powered by React Router and Cloudflare Workers",
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
