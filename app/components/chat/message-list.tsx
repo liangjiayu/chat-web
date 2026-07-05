@@ -1,5 +1,5 @@
 import type { Message } from '@contracts/models';
-import { Copy, Loader2, RotateCcw, Sparkles, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Copy, Loader2, RotateCcw, ThumbsDown, ThumbsUp } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -18,11 +18,6 @@ export function MessageList({ messages }: MessageListProps) {
           className={cn('flex gap-3', message.role === 'user' ? 'justify-end' : 'justify-start')}
           key={message.id}
         >
-          {message.role !== 'user' ? (
-            <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center text-chat-accent">
-              <Sparkles className="h-7 w-7" />
-            </div>
-          ) : null}
           <div
             className={cn(
               'max-w-[82%] text-[15px] leading-7 md:text-base',

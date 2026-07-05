@@ -178,7 +178,7 @@ export function ChatComposer() {
       ) : null}
       <div className="pointer-events-auto rounded-[24px] border border-chat-border-strong bg-chat-surface p-3 shadow-chat-composer">
         <Textarea
-          className="max-h-40 min-h-14 resize-none border-0 bg-transparent px-3 py-2 text-[17px] text-chat-foreground shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 md:text-[20px]"
+          className="max-h-40 min-h-14 resize-none border-0 bg-transparent px-3 py-2 text-[15px] text-chat-foreground shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 md:text-base"
           disabled={isSending}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
@@ -245,9 +245,6 @@ export function ChatComposer() {
             </Button>
           </div>
         </div>
-      </div>
-      <div className="mt-2 text-center text-xs text-chat-foreground-muted">
-        内容由 AI 生成，请仔细甄别
       </div>
     </>
   );
