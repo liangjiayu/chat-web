@@ -1,7 +1,11 @@
 import type { ChatRequest } from '@contracts/chat';
 import { Hono } from 'hono';
 
-import { DEEPSEEK_CHAT_COMPLETIONS_URL, DEFAULT_MODEL } from '../constants';
+import {
+  DEEPSEEK_CHAT_COMPLETIONS_URL,
+  DEFAULT_CONVERSATION_TITLE,
+  DEFAULT_MODEL,
+} from '../constants';
 import {
   createConversation,
   getConversation,
@@ -9,7 +13,7 @@ import {
   updateConversationTitleIfCurrent,
 } from '../repositories/conversations';
 import { createMessage, getMessageHistory } from '../repositories/messages';
-import { makeTitle, makeTitleMessages, parseTitleContent } from '../utils/chat';
+import { makeTitleMessages, parseTitleContent } from '../utils/chat';
 import { jsonError } from '../utils/response';
 import { sse } from '../utils/sse';
 
@@ -40,14 +44,6 @@ async function generateConversationTitle(input: { apiKey: string; model: string;
   return parseTitleContent(data.choices?.[0]?.message?.content ?? '');
 }
 
-/*
- * 核心流程：
- * 1. 校验请求参数和 DeepSeek 配置。
- * 2. 如果会话不存在，则用前端传入的会话 ID 创建新会话。
- * 3. 先保存用户消息，再读取会话历史请求 DeepSeek 流式接口。
- * 4. 将 DeepSeek 的增量内容转成前端约定的 SSE 事件。
- * 5. 流结束后保存助手完整回复，并在新会话场景下生成标题。
- */
 chatRoute.post('/chat/completion', async (c) => {
   if (!c.env.DEEPSEEK_API_KEY) {
     return jsonError('缺少 DEEPSEEK_API_KEY，请在 .dev.vars 或 Wrangler secret 中配置', 500);
@@ -72,7 +68,7 @@ chatRoute.post('/chat/completion', async (c) => {
   let initialTitle = conversation?.title ?? '';
 
   if (!conversation) {
-    initialTitle = makeTitle();
+    initialTitle = DEFAULT_CONVERSATION_TITLE;
     isNewConversation = true;
     conversation = await createConversation(c.env.DB, {
       id: conversationId,
@@ -80,10 +76,6 @@ chatRoute.post('/chat/completion', async (c) => {
       model,
       now,
     });
-  }
-
-  if (!conversation) {
-    return jsonError('无法创建会话', 500);
   }
 
   const userMessageId = crypto.randomUUID();
@@ -107,7 +99,7 @@ chatRoute.post('/chat/completion', async (c) => {
     },
     body: JSON.stringify({
       model,
-      messages: history ?? [{ role: 'user', content: prompt }],
+      messages: history,
       stream: true,
     }),
   });

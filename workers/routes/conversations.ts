@@ -4,7 +4,7 @@ import type {
 } from '@contracts/conversations';
 import { Hono } from 'hono';
 
-import { DEFAULT_MODEL } from '../constants';
+import { DEFAULT_CONVERSATION_TITLE, DEFAULT_MODEL } from '../constants';
 import {
   createConversation,
   deleteConversation,
@@ -27,7 +27,7 @@ conversationsRoute.post('/conversations', async (c) => {
   const body = await c.req.json<CreateConversationRequest>();
   const id = crypto.randomUUID();
   const now = Date.now();
-  const title = body.title?.trim() || '新对话';
+  const title = body.title?.trim() || DEFAULT_CONVERSATION_TITLE;
   const model = body.model || c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
   const conversation = await createConversation(c.env.DB, { id, title, model, now });
 

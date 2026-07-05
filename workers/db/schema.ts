@@ -4,8 +4,6 @@ import { check, foreignKey, index, integer, sqliteTable, text } from 'drizzle-or
 export type Metadata = Record<string, unknown>;
 export const MESSAGE_ROLES = ['system', 'user', 'assistant'] as const;
 
-export type MessageRole = (typeof MESSAGE_ROLES)[number];
-
 export const conversations = sqliteTable(
   'conversations',
   {
@@ -60,8 +58,3 @@ export const schema = {
   conversations,
   messages,
 };
-
-export type ConversationRecord = typeof conversations.$inferSelect;
-export type NewConversationRecord = typeof conversations.$inferInsert;
-export type MessageRecord = typeof messages.$inferSelect;
-export type NewMessageRecord = typeof messages.$inferInsert;

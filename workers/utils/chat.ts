@@ -1,7 +1,3 @@
-export function makeTitle() {
-  return '新对话';
-}
-
 export function makeTitleMessages(prompt: string) {
   return [
     {
