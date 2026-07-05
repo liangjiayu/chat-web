@@ -20,7 +20,7 @@ export function MessageList({ messages }: MessageListProps) {
         >
           <div
             className={cn(
-              'max-w-[82%] text-[15px] leading-7 md:text-base',
+              'pr-4 text-[15px] leading-7 md:text-base',
               message.role === 'user'
                 ? 'rounded-2xl bg-chat-selection px-4 py-2.5 text-chat-foreground'
                 : 'text-chat-foreground-strong',

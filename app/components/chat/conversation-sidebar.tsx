@@ -63,7 +63,7 @@ export function ConversationSidebar() {
         'fixed inset-y-0 left-0 z-30 flex h-screen w-[286px] shrink-0 flex-col overflow-hidden bg-chat-background text-chat-foreground transition-all duration-200 md:relative md:translate-x-0',
         sidebarOpen
           ? 'translate-x-0 border-r border-chat-border md:w-[286px]'
-          : '-translate-x-full border-r-0 md:w-16 md:translate-x-0',
+          : '-translate-x-full border-r border-chat-border md:w-16 md:translate-x-0',
       )}
     >
       <div className={cn('h-full min-w-[286px] flex-col', sidebarOpen ? 'flex' : 'hidden')}>
