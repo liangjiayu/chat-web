@@ -21,14 +21,14 @@ export function ChatHeader({ isEmptyHome = false }: ChatHeaderProps) {
   return (
     <header
       className={cn(
-        'flex h-14 shrink-0 items-center justify-between bg-[#fbfbfa] px-3 md:px-7',
+        'flex h-14 shrink-0 items-center justify-between bg-chat-background px-3 md:px-7',
         isEmptyHome ? 'border-b border-transparent md:hidden' : 'border-b border-transparent',
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
         <Button
           className={cn(
-            'size-8 text-[#5f5a52] hover:bg-[#efede7] md:hidden',
+            'size-8 text-chat-foreground-muted hover:bg-chat-hover md:hidden',
             sidebarOpen && 'hidden',
           )}
           onClick={openSidebar}
@@ -39,15 +39,15 @@ export function ChatHeader({ isEmptyHome = false }: ChatHeaderProps) {
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex min-w-0 items-center gap-1">
-          <h1 className="truncate text-[15px] font-semibold text-[#2f2b25]">
+          <h1 className="truncate text-[15px] font-semibold text-chat-foreground-strong">
             {activeConversation?.title ?? '新对话'}
           </h1>
-          <ChevronDown className="h-4 w-4 shrink-0 text-[#7b756d]" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-chat-foreground-muted" />
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <Button
-          className="size-8 text-[#34302a] hover:bg-[#efefed]"
+          className="size-8 text-chat-foreground hover:bg-chat-hover"
           size="icon"
           title="文档"
           type="button"
@@ -56,7 +56,7 @@ export function ChatHeader({ isEmptyHome = false }: ChatHeaderProps) {
           <FileText className="h-4 w-4" />
         </Button>
         <Button
-          className="h-8 rounded-lg border-[#dedbd2] bg-white px-3 text-sm font-semibold text-[#2f2b25] shadow-sm hover:bg-[#f5f5f3]"
+          className="h-8 rounded-lg border-chat-border-strong bg-chat-surface px-3 text-sm font-semibold text-chat-foreground-strong shadow-sm hover:bg-chat-hover"
           size="sm"
           type="button"
           variant="outline"

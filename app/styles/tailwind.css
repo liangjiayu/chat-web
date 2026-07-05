@@ -1,2 +1,38 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+
+@theme inline {
+  --color-chat-background: var(--chat-background);
+  --color-chat-surface: var(--chat-surface);
+  --color-chat-surface-muted: var(--chat-surface-muted);
+  --color-chat-border: var(--chat-border);
+  --color-chat-border-strong: var(--chat-border-strong);
+  --color-chat-hover: var(--chat-hover);
+  --color-chat-selection: var(--chat-selection);
+  --color-chat-foreground: var(--chat-foreground);
+  --color-chat-foreground-strong: var(--chat-foreground-strong);
+  --color-chat-foreground-muted: var(--chat-foreground-muted);
+  --color-chat-primary-hover: var(--chat-primary-hover);
+  --color-chat-primary-foreground: var(--chat-primary-foreground);
+  --color-chat-accent: var(--chat-accent);
+  --color-chat-info: var(--chat-info);
+  --shadow-chat-composer: 0 18px 44px var(--chat-shadow);
+}
+
+:root {
+  --chat-background: #fbfbfa;
+  --chat-surface: #ffffff;
+  --chat-surface-muted: #f7f5f0;
+  --chat-border: #e8e4dc;
+  --chat-border-strong: #dedbd2;
+  --chat-hover: #efede7;
+  --chat-selection: #ebe8e0;
+  --chat-foreground: #34302a;
+  --chat-foreground-strong: #2f2b25;
+  --chat-foreground-muted: #7b756d;
+  --chat-primary-hover: #47413a;
+  --chat-primary-foreground: #ffffff;
+  --chat-accent: #d85f3d;
+  --chat-info: #2f6fec;
+  --chat-shadow: rgb(47 43 37 / 0.1);
+}

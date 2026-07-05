@@ -19,7 +19,7 @@ export function MessageList({ messages }: MessageListProps) {
           key={message.id}
         >
           {message.role !== 'user' ? (
-            <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center text-[#d85f3d]">
+            <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center text-chat-accent">
               <Sparkles className="h-7 w-7" />
             </div>
           ) : null}
@@ -27,8 +27,8 @@ export function MessageList({ messages }: MessageListProps) {
             className={cn(
               'max-w-[82%] text-[15px] leading-7 md:text-base',
               message.role === 'user'
-                ? 'rounded-2xl bg-[#edeae3] px-4 py-2.5 text-[#34302a]'
-                : 'text-[#2f2b25]',
+                ? 'rounded-2xl bg-chat-selection px-4 py-2.5 text-chat-foreground'
+                : 'text-chat-foreground-strong',
             )}
           >
             {message.content ? (
@@ -40,7 +40,7 @@ export function MessageList({ messages }: MessageListProps) {
               </div>
             )}
             {message.role !== 'user' && message.content ? (
-              <div className="mt-4 flex items-center gap-1 text-[#8b857d]">
+              <div className="mt-4 flex items-center gap-1 text-chat-foreground-muted">
                 <MessageAction icon={<Copy className="h-4 w-4" />} label="复制" />
                 <MessageAction icon={<ThumbsUp className="h-4 w-4" />} label="赞" />
                 <MessageAction icon={<ThumbsDown className="h-4 w-4" />} label="踩" />
@@ -57,7 +57,7 @@ export function MessageList({ messages }: MessageListProps) {
 function MessageAction({ icon, label }: { icon: ReactNode; label: string }) {
   return (
     <button
-      className="flex size-7 items-center justify-center rounded-lg hover:bg-[#efede7] hover:text-[#34302a]"
+      className="flex size-7 items-center justify-center rounded-lg hover:bg-chat-hover hover:text-chat-foreground"
       title={label}
       type="button"
     >

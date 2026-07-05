@@ -12,7 +12,7 @@ export function ChatLayout({ children, sidebar }: ChatLayoutProps) {
   const closeSidebar = useChatStore((state) => state.closeSidebar);
 
   return (
-    <main className="min-h-screen bg-[#fbfbfa] text-[#2d2a26]">
+    <main className="min-h-screen bg-chat-background text-chat-foreground">
       <div className="flex h-screen overflow-hidden">
         {sidebar}
         {sidebarOpen ? (
@@ -23,7 +23,7 @@ export function ChatLayout({ children, sidebar }: ChatLayoutProps) {
             type="button"
           />
         ) : null}
-        <section className="flex min-w-0 flex-1 flex-col bg-[#fbfbfa]">{children}</section>
+        <section className="flex min-w-0 flex-1 flex-col bg-chat-background">{children}</section>
       </div>
     </main>
   );

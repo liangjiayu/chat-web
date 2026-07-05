@@ -13,7 +13,7 @@ export function EmptyChat({ composer }: EmptyChatProps) {
     <div className="flex flex-1 flex-col items-center">
       <div className="mb-8 flex items-center gap-4 text-center">
         <AppLogo className="h-10 w-10" />
-        <h2 className="font-serif text-[34px] leading-tight font-semibold text-[#2f2b25] md:text-[44px]">
+        <h2 className="font-serif text-[34px] leading-tight font-semibold text-chat-foreground-strong md:text-[44px]">
           使用快速模式开始对话
         </h2>
       </div>
@@ -32,11 +32,11 @@ export function EmptyChat({ composer }: EmptyChatProps) {
 function PromptPill({ icon, label }: { icon: ReactNode; label: string }) {
   return (
     <Button
-      className="h-8 gap-1.5 rounded-lg border-[#dedbd2] bg-[#fbfaf7] px-2.5 text-sm font-semibold text-[#34302a] shadow-sm hover:bg-[#f1efea]"
+      className="h-8 gap-1.5 rounded-lg border-chat-border-strong bg-chat-background px-2.5 text-sm font-semibold text-chat-foreground shadow-sm hover:bg-chat-hover"
       type="button"
       variant="outline"
     >
-      <span className="text-[#7b756d]">{icon}</span>
+      <span className="text-chat-foreground-muted">{icon}</span>
       {label}
     </Button>
   );
