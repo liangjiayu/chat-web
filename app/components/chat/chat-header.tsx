@@ -1,22 +1,23 @@
-import type { Conversation } from '@contracts/models';
 import { ChevronDown, FileText, Menu } from 'lucide-react';
+import { useParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useConversationsQuery } from '@/queries/conversations';
+import { useChatStore } from '@/stores';
 
 type ChatHeaderProps = {
-  activeConversation: Conversation | null;
   isEmptyHome?: boolean;
-  sidebarOpen: boolean;
-  onOpenSidebar: () => void;
 };
 
-export function ChatHeader({
-  activeConversation,
-  isEmptyHome = false,
-  sidebarOpen,
-  onOpenSidebar,
-}: ChatHeaderProps) {
+export function ChatHeader({ isEmptyHome = false }: ChatHeaderProps) {
+  const { id } = useParams();
+  const conversationsQuery = useConversationsQuery();
+  const openSidebar = useChatStore((state) => state.openSidebar);
+  const sidebarOpen = useChatStore((state) => state.sidebarOpen);
+  const activeConversation =
+    conversationsQuery.data?.find((conversation) => conversation.id === id) ?? null;
+
   return (
     <header
       className={cn(
@@ -30,7 +31,7 @@ export function ChatHeader({
             'size-8 text-[#5f5a52] hover:bg-[#efede7] md:hidden',
             sidebarOpen && 'hidden',
           )}
-          onClick={onOpenSidebar}
+          onClick={openSidebar}
           size="icon"
           variant="ghost"
           title="打开侧栏"

@@ -1,21 +1,15 @@
 import type { ReactNode } from 'react';
 
+import { useChatStore } from '@/stores';
+
 type ChatLayoutProps = {
   children: ReactNode;
   sidebar: ReactNode;
-  sidebarOpen: boolean;
-  onCloseSidebar: () => void;
-  onOpenSidebar: () => void;
 };
 
-export function ChatLayout({
-  children,
-  sidebar,
-  sidebarOpen,
-  onCloseSidebar,
-  onOpenSidebar,
-}: ChatLayoutProps) {
-  void onOpenSidebar;
+export function ChatLayout({ children, sidebar }: ChatLayoutProps) {
+  const sidebarOpen = useChatStore((state) => state.sidebarOpen);
+  const closeSidebar = useChatStore((state) => state.closeSidebar);
 
   return (
     <main className="min-h-screen bg-[#fbfbfa] text-[#2d2a26]">
@@ -25,7 +19,7 @@ export function ChatLayout({
           <button
             aria-label="关闭侧栏遮罩"
             className="fixed inset-0 z-20 bg-foreground/20 md:hidden"
-            onClick={onCloseSidebar}
+            onClick={closeSidebar}
             type="button"
           />
         ) : null}

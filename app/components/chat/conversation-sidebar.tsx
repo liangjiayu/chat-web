@@ -1,4 +1,3 @@
-import type { Conversation } from '@contracts/models';
 import {
   Archive,
   Briefcase,
@@ -17,41 +16,47 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
+import * as React from 'react';
 import type { ReactNode } from 'react';
+import { useNavigate, useParams } from 'react-router';
 
 import { AppLogo } from '@/components/app-logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useConversationsQuery } from '@/queries/conversations';
+import { useChatStore } from '@/stores';
 
-import type { ConversationGroup } from './utils';
+import { groupConversations } from './utils';
 
-type ConversationSidebarProps = {
-  activeId: string | null;
-  groups: ConversationGroup[];
-  isLoading: boolean;
-  isSending: boolean;
-  sidebarOpen: boolean;
-  onCloseSidebar: () => void;
-  onLoadConversation: (conversationId: string) => void;
-  onNewConversation: () => void;
-  onOpenDelete: (conversation: Conversation) => void;
-  onOpenRename: (conversation: Conversation) => void;
-  onToggleSidebar: () => void;
-};
+export function ConversationSidebar() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const conversationsQuery = useConversationsQuery();
+  const conversations = conversationsQuery.data ?? [];
+  const groups = React.useMemo(() => groupConversations(conversations), [conversations]);
+  const actionError = useChatStore((state) => state.actionError);
+  const clearActionError = useChatStore((state) => state.clearActionError);
+  const closeSidebar = useChatStore((state) => state.closeSidebar);
+  const isSending = useChatStore((state) => state.isSending);
+  const openDeleteDialog = useChatStore((state) => state.openDeleteDialog);
+  const openRenameDialog = useChatStore((state) => state.openRenameDialog);
+  const resetInput = useChatStore((state) => state.resetInput);
+  const sidebarOpen = useChatStore((state) => state.sidebarOpen);
+  const toggleSidebar = useChatStore((state) => state.toggleSidebar);
+  const activeId = id ?? null;
 
-export function ConversationSidebar({
-  activeId,
-  groups,
-  isLoading,
-  isSending,
-  sidebarOpen,
-  onCloseSidebar,
-  onLoadConversation,
-  onNewConversation,
-  onOpenDelete,
-  onOpenRename,
-  onToggleSidebar,
-}: ConversationSidebarProps) {
+  function loadConversation(conversationId: string) {
+    void navigate(`/chat/${conversationId}`);
+  }
+
+  function startNewConversation() {
+    if (actionError) {
+      clearActionError();
+    }
+    resetInput();
+    void navigate('/chat');
+  }
+
   return (
     <aside
       className={cn(
@@ -78,7 +83,7 @@ export function ConversationSidebar({
             </Button>
             <Button
               className="hidden size-8 text-[#6d675f] hover:bg-[#ece9e1] md:inline-flex"
-              onClick={onToggleSidebar}
+              onClick={toggleSidebar}
               size="icon"
               variant="ghost"
               title="收起侧栏"
@@ -87,7 +92,7 @@ export function ConversationSidebar({
             </Button>
             <Button
               className="size-8 text-[#6d675f] hover:bg-[#ece9e1] md:hidden"
-              onClick={onCloseSidebar}
+              onClick={closeSidebar}
               size="icon"
               variant="ghost"
               title="关闭侧栏"
@@ -101,7 +106,7 @@ export function ConversationSidebar({
           <Button
             className="h-9 w-full justify-start gap-3 rounded-lg px-2.5 text-[15px] font-medium text-[#34302a] hover:bg-[#ece9e1]"
             disabled={isSending}
-            onClick={onNewConversation}
+            onClick={startNewConversation}
             variant="ghost"
           >
             <Plus className="h-4 w-4 rounded-full bg-[#dedbd2] p-0.5" />
@@ -120,7 +125,7 @@ export function ConversationSidebar({
         </div>
 
         <div className="mt-2 flex-1 overflow-y-auto px-2 pb-4">
-          {isLoading ? (
+          {conversationsQuery.isLoading ? (
             <div className="flex items-center gap-2 px-3 text-sm text-[#7b756d]">
               <Loader2 className="h-4 w-4 animate-spin" />
               加载会话
@@ -142,7 +147,7 @@ export function ConversationSidebar({
                     >
                       <button
                         className="min-w-0 flex-1 truncate text-left"
-                        onClick={() => onLoadConversation(conversation.id)}
+                        onClick={() => loadConversation(conversation.id)}
                         type="button"
                       >
                         {conversation.title}
@@ -150,7 +155,7 @@ export function ConversationSidebar({
                       <div className="flex opacity-0 transition-opacity group-hover:opacity-100">
                         <Button
                           className="size-6 text-[#7b756d] hover:bg-[#dedbd2]"
-                          onClick={() => onOpenRename(conversation)}
+                          onClick={() => openRenameDialog(conversation)}
                           size="icon"
                           title="重命名"
                           variant="ghost"
@@ -159,7 +164,7 @@ export function ConversationSidebar({
                         </Button>
                         <Button
                           className="size-6 text-[#7b756d] hover:bg-[#dedbd2]"
-                          onClick={() => onOpenDelete(conversation)}
+                          onClick={() => openDeleteDialog(conversation.id)}
                           size="icon"
                           title="删除"
                           variant="ghost"
@@ -214,7 +219,7 @@ export function ConversationSidebar({
         <AppLogo className="mb-3 h-8 w-8" />
         <Button
           className="size-8 text-[#33312e] hover:bg-[#efefed]"
-          onClick={onToggleSidebar}
+          onClick={toggleSidebar}
           size="icon"
           title="展开侧栏"
           variant="ghost"
@@ -227,7 +232,7 @@ export function ConversationSidebar({
             disabled={isSending}
             icon={<Plus className="h-5 w-5" />}
             label="开启新对话"
-            onClick={onNewConversation}
+            onClick={startNewConversation}
             rounded
           />
           <CollapsedSidebarButton icon={<MessageCircle className="h-5 w-5" />} label="会话" />
