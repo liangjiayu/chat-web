@@ -136,7 +136,7 @@ export function ConversationSidebar() {
                 <h2 className="mb-1 px-2 text-xs font-medium text-chat-foreground-muted">
                   {group.label}
                 </h2>
-                <div>
+                <div className="space-y-0.5">
                   {group.items.map((conversation) => (
                     <div
                       className={cn(
