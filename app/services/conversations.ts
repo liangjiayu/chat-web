@@ -2,8 +2,6 @@ import type {
   ConversationListResponse,
   ConversationMessagesResponse,
   ConversationResponse,
-  CreateConversationRequest,
-  CreateConversationResponse,
   DeleteConversationResponse,
 } from '@contracts/conversations';
 
@@ -20,14 +18,6 @@ export function getConversationMessages(conversationId: string) {
   return request<ConversationMessagesResponse>({
     method: 'GET',
     url: `/api/conversations/${conversationId}`,
-  });
-}
-
-export function createConversation(payload: CreateConversationRequest) {
-  return request<CreateConversationResponse>({
-    method: 'POST',
-    url: '/api/conversations',
-    data: payload,
   });
 }
 

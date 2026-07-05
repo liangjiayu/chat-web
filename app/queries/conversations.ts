@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  createConversation,
   deleteConversation,
   getConversationMessages,
   getConversations,
@@ -28,17 +27,6 @@ export function useMessagesQuery(conversationId: string | null) {
     queryKey: messageKeys.detail(conversationId),
     queryFn: () => getConversationMessages(conversationId!),
     enabled: Boolean(conversationId),
-  });
-}
-
-export function useCreateConversationMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: createConversation,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
-    },
   });
 }
 

@@ -9,7 +9,7 @@
   "sortImports": true,
   "sortTailwindcss": {
     "stylesheet": "./app/styles/index.css",
-    "functions": ["cn", "cva"]
+    "functions": ["cn"]
   },
   "ignorePatterns": ["worker-configuration.d.ts"]
 }

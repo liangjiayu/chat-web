@@ -1,6 +1,7 @@
 import { useParams } from 'react-router';
 
 import { ChatComposer, ChatHeader, MessageList } from '@/components/chat';
+import { cn } from '@/lib/utils';
 import { useMessagesQuery } from '@/queries/conversations';
 import { useChatStore } from '@/stores';
 
@@ -23,10 +24,10 @@ export default function ChatDetail() {
         </div>
       </div>
       <div
-        className={[
+        className={cn(
           'pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#fbfbfa] via-[#fbfbfa] to-[#fbfbfa]/0 pt-12',
           sidebarOpen ? 'md:left-[286px]' : 'md:left-16',
-        ].join(' ')}
+        )}
       >
         <div className="mx-auto max-w-[1000px] px-4 pb-3 md:px-6">
           <ChatComposer />
