@@ -49,3 +49,16 @@ pnpm dev
 - `pnpm run db:migrate:local`：执行本地 D1 数据库迁移。
 - `pnpm run db:migrate:remote`：执行远程 D1 数据库迁移。
 - `pnpm run deploy`：构建并部署到 Cloudflare Workers。
+
+## Agent 技能工作流
+
+日常可以直接描述任务，Agent 会按情况选择技能；也可以手动指定 $skill-name。
+
+- 明确的小改动：$implement
+- Bug 或测试失败：$diagnosing-bugs
+- 较大的新功能：$grill-with-docs → $to-prd → $to-issues → $implement
+- 只想拷问一个方案，不需要写入项目文档：$grill-me
+- 改完后复查：$code-review
+- 想找代码库改进点：$improve-codebase-architecture
+
+默认优先使用：小改动走 $implement，问题排查走 $diagnosing-bugs，大功能先澄清再拆分。

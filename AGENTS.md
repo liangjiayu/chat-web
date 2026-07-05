@@ -36,3 +36,17 @@
   - **style**: 样式调整（不影响逻辑）
   - **chore**: 构建、依赖、配置等杂项变更
   - **docs**: 文档变更
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked as local Markdown files under `.scratch/`; external PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage roles use the default label vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Domain documentation uses a single-context layout with root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
