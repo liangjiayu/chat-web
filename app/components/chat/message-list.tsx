@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { MessageContent } from './message-content';
+import { MarkdownRenderer } from './markdown-renderer';
 
 type MessageListProps = {
   messages: Message[];
@@ -27,7 +27,7 @@ export function MessageList({ messages }: MessageListProps) {
             )}
           >
             {message.content ? (
-              <MessageContent content={message.content} />
+              <MarkdownRenderer content={message.content} />
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
