@@ -22,6 +22,12 @@ import { useNavigate, useParams } from 'react-router';
 
 import { AppLogo } from '@/components/app-logo';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useConversationsQuery } from '@/queries/conversations';
 import { useChatStore } from '@/stores';
@@ -154,26 +160,10 @@ export function ConversationSidebar() {
                       >
                         {conversation.title}
                       </button>
-                      <div className="flex opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button
-                          className="size-6 text-chat-foreground-muted hover:bg-chat-border-strong"
-                          onClick={() => openRenameDialog(conversation)}
-                          size="icon"
-                          title="重命名"
-                          variant="ghost"
-                        >
-                          <Edit3 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          className="size-6 text-chat-foreground-muted hover:bg-chat-border-strong"
-                          onClick={() => openDeleteDialog(conversation.id)}
-                          size="icon"
-                          title="删除"
-                          variant="ghost"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                      <ConversationItemMenu
+                        onDelete={() => openDeleteDialog(conversation.id)}
+                        onRename={() => openRenameDialog(conversation)}
+                      />
                     </div>
                   ))}
                 </div>
@@ -266,6 +256,40 @@ export function ConversationSidebar() {
         </div>
       </div>
     </aside>
+  );
+}
+
+function ConversationItemMenu({
+  onDelete,
+  onRename,
+}: {
+  onDelete: () => void;
+  onRename: () => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          className="size-6 text-chat-foreground-muted opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-chat-border-strong data-[state=open]:opacity-100"
+          size="icon"
+          title="更多"
+          type="button"
+          variant="ghost"
+        >
+          <MoreHorizontal className="h-3.5 w-3.5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="min-w-30" side="bottom" align="start">
+        <DropdownMenuItem onSelect={onRename}>
+          <Edit3 className="h-4 w-4" />
+          <span>编辑</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={onDelete} variant="destructive">
+          <Trash2 className="h-4 w-4" />
+          <span>删除</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
