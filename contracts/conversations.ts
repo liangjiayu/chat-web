@@ -13,6 +13,10 @@ export type RenameConversationRequest = {
   title?: string;
 };
 
+export type EditMessageRequest = {
+  content?: string;
+};
+
 export type ConversationListResponse = Conversation[];
 
 export type ConversationResponse = Conversation;
@@ -23,5 +27,9 @@ export type ConversationMessagesResponse = {
 };
 
 export type DeleteConversationResponse = {
+  success: true;
+};
+
+export type EditMessageResponse = {
   success: true;
 };

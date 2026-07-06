@@ -13,6 +13,7 @@ export default function ChatDetail() {
   const { id } = useParams();
   const messagesQuery = useMessagesQuery(id ?? null);
   const sidebarOpen = useChatStore((state) => state.sidebarOpen);
+  const conversation = messagesQuery.data?.conversation ?? null;
   const messages = messagesQuery.data?.messages ?? [];
 
   return (
@@ -20,7 +21,7 @@ export default function ChatDetail() {
       <ChatHeader />
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto flex min-h-full w-full max-w-[760px] flex-col px-4 pt-7 pb-52 md:px-6">
-          <MessageList messages={messages} />
+          <MessageList conversation={conversation} messages={messages} />
         </div>
       </div>
       <div

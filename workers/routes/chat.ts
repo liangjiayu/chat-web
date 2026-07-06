@@ -12,7 +12,12 @@ import {
   touchConversation,
   updateConversationTitleIfCurrent,
 } from '../repositories/conversations';
-import { createMessage, getMessageHistory } from '../repositories/messages';
+import {
+  createMessage,
+  getLastUserMessage,
+  getMessage,
+  getMessageHistory,
+} from '../repositories/messages';
 import { makeTitleMessages, parseTitleContent } from '../utils/chat';
 import { jsonError } from '../utils/response';
 import { sse } from '../utils/sse';
@@ -51,14 +56,19 @@ chatRoute.post('/chat/completion', async (c) => {
 
   const body = await c.req.json<ChatRequest>();
   const conversationId = body.conversation_id?.trim();
-  const prompt = body.prompt?.trim();
+  const editedMessageId = body.message_id?.trim();
+  let prompt = body.prompt?.trim();
 
   if (!conversationId) {
     return jsonError('会话 ID 不能为空');
   }
 
-  if (!prompt) {
+  if (!prompt && !editedMessageId) {
     return jsonError('消息不能为空');
+  }
+
+  if (prompt && editedMessageId) {
+    return jsonError('不能同时发送新消息和编辑消息');
   }
 
   const now = Date.now();
@@ -67,7 +77,29 @@ chatRoute.post('/chat/completion', async (c) => {
   let isNewConversation = false;
   let initialTitle = conversation?.title ?? '';
 
-  if (!conversation) {
+  if (editedMessageId) {
+    if (!conversation) {
+      return jsonError('会话不存在', 404);
+    }
+
+    const editedMessage = await getMessage(c.env.DB, conversationId, editedMessageId);
+
+    if (!editedMessage) {
+      return jsonError('消息不存在', 404);
+    }
+
+    if (editedMessage.role !== 'user') {
+      return jsonError('只能编辑用户消息');
+    }
+
+    const lastUserMessage = await getLastUserMessage(c.env.DB, conversationId);
+
+    if (lastUserMessage?.id !== editedMessage.id) {
+      return jsonError('只能编辑最后一条用户消息');
+    }
+
+    prompt = editedMessage.content.trim();
+  } else if (!conversation) {
     initialTitle = DEFAULT_CONVERSATION_TITLE;
     isNewConversation = true;
     conversation = await createConversation(c.env.DB, {
@@ -78,17 +110,23 @@ chatRoute.post('/chat/completion', async (c) => {
     });
   }
 
-  const userMessageId = crypto.randomUUID();
-  await createMessage(c.env.DB, {
-    id: userMessageId,
-    conversationId,
-    role: 'user',
-    content: prompt,
-    model,
-    status: 'done',
-    now,
-  });
-  await touchConversation(c.env.DB, conversationId, now);
+  if (!prompt) {
+    return jsonError('消息不能为空');
+  }
+
+  if (!editedMessageId) {
+    const userMessageId = crypto.randomUUID();
+    await createMessage(c.env.DB, {
+      id: userMessageId,
+      conversationId,
+      role: 'user',
+      content: prompt,
+      model,
+      status: 'done',
+      now,
+    });
+    await touchConversation(c.env.DB, conversationId, now);
+  }
 
   const history = await getMessageHistory(c.env.DB, conversationId);
   const upstream = await fetch(DEEPSEEK_CHAT_COMPLETIONS_URL, {

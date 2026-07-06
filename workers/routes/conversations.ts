@@ -1,5 +1,6 @@
 import type {
   CreateConversationRequest,
+  EditMessageRequest,
   RenameConversationRequest,
 } from '@contracts/conversations';
 import { Hono } from 'hono';
@@ -11,8 +12,15 @@ import {
   getConversation,
   getConversations,
   renameConversation,
+  touchConversation,
 } from '../repositories/conversations';
-import { getMessages } from '../repositories/messages';
+import {
+  deleteAssistantMessagesAfter,
+  getLastUserMessage,
+  getMessage,
+  getMessages,
+  updateMessageContent,
+} from '../repositories/messages';
 import { jsonError } from '../utils/response';
 
 export const conversationsRoute = new Hono<{ Bindings: Cloudflare.Env }>();
@@ -59,6 +67,54 @@ conversationsRoute.delete('/conversations/:id', async (c) => {
   if (!result.meta.changes) {
     return jsonError('会话不存在', 404);
   }
+
+  return c.json({ success: true });
+});
+
+conversationsRoute.patch('/conversations/:conversationId/messages/:messageId', async (c) => {
+  const conversationId = c.req.param('conversationId');
+  const messageId = c.req.param('messageId');
+  const body = await c.req.json<EditMessageRequest>();
+  const content = body.content?.trim();
+
+  if (!content) {
+    return jsonError('消息不能为空');
+  }
+
+  const conversation = await getConversation(c.env.DB, conversationId);
+
+  if (!conversation) {
+    return jsonError('会话不存在', 404);
+  }
+
+  const message = await getMessage(c.env.DB, conversationId, messageId);
+
+  if (!message) {
+    return jsonError('消息不存在', 404);
+  }
+
+  if (message.role !== 'user') {
+    return jsonError('只能编辑用户消息');
+  }
+
+  const lastUserMessage = await getLastUserMessage(c.env.DB, conversationId);
+
+  if (lastUserMessage?.id !== message.id) {
+    return jsonError('只能编辑最后一条用户消息');
+  }
+
+  const now = Date.now();
+  await updateMessageContent(c.env.DB, {
+    conversationId,
+    id: message.id,
+    content,
+    now,
+  });
+  await deleteAssistantMessagesAfter(c.env.DB, {
+    conversationId,
+    createdAt: message.created_at,
+  });
+  await touchConversation(c.env.DB, conversationId, now);
 
   return c.json({ success: true });
 });

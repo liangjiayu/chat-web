@@ -6,20 +6,11 @@ import { useNavigate, useParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  setConversationsCache,
-  setConversationTitleCache,
-  setMessagesCache,
-} from '@/queries/conversation-cache';
-import {
-  conversationKeys,
-  messageKeys,
-  useConversationsQuery,
-  useMessagesQuery,
-} from '@/queries/conversations';
-import { streamChat } from '@/services/chat-stream';
+import { setConversationsCache, setMessagesCache } from '@/queries/conversation-cache';
+import { messageKeys, useConversationsQuery, useMessagesQuery } from '@/queries/conversations';
 import { useChatStore } from '@/stores';
 
+import { useChatCompletion } from './use-chat-completion';
 import { sortConversationsByUpdatedAt } from './utils';
 
 export function ChatComposer() {
@@ -28,6 +19,7 @@ export function ChatComposer() {
   const queryClient = useQueryClient();
   const conversationsQuery = useConversationsQuery();
   const messagesQuery = useMessagesQuery(activeId ?? null);
+  const runCompletion = useChatCompletion();
   const actionError = useChatStore((state) => state.actionError);
   const input = useChatStore((state) => state.input);
   const isSending = useChatStore((state) => state.isSending);
@@ -111,62 +103,15 @@ export function ChatComposer() {
       void navigate(`/chat/${optimisticConversationId}`, { replace: true });
     }
 
-    try {
-      for await (const parsed of streamChat({
+    await runCompletion({
+      conversation: cacheConversation,
+      conversationId: cacheConversationId,
+      optimisticAssistantId,
+      request: {
         conversation_id: optimisticConversationId,
         prompt,
-      })) {
-        if (parsed.event === 'message') {
-          setMessagesCache(queryClient, cacheConversationId, cacheConversation, (current) =>
-            current.map((item) =>
-              item.id === optimisticAssistantId
-                ? { ...item, content: item.content + parsed.data.message.v }
-                : item,
-            ),
-          );
-        }
-
-        if (parsed.event === 'done') {
-          setMessagesCache(queryClient, cacheConversationId, cacheConversation, (current) =>
-            current.map((item) =>
-              item.id === optimisticAssistantId
-                ? {
-                    ...item,
-                    id: parsed.data.message.id,
-                    status: 'done',
-                    metadata: parsed.data.message.metadata,
-                    created_at: parsed.data.message.created_at,
-                    updated_at: parsed.data.message.updated_at,
-                  }
-                : item,
-            ),
-          );
-          setSending(false);
-          void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
-          void queryClient.invalidateQueries({
-            queryKey: messageKeys.detail(cacheConversationId),
-          });
-        }
-
-        if (parsed.event === 'title') {
-          setConversationTitleCache(queryClient, cacheConversationId, parsed.data.content);
-        }
-
-        if (parsed.event === 'error') {
-          throw new Error(parsed.data.message);
-        }
-      }
-    } catch (reason) {
-      setActionError(reason instanceof Error ? reason.message : '发送失败');
-
-      setMessagesCache(queryClient, cacheConversationId, cacheConversation, (current) =>
-        current.filter(
-          (item) => item.id !== optimisticAssistantId || item.content.trim().length > 0,
-        ),
-      );
-    } finally {
-      setSending(false);
-    }
+      },
+    });
   }
 
   return (

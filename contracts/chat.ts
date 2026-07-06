@@ -2,7 +2,8 @@ import type { Message } from './models';
 
 export type ChatRequest = {
   conversation_id: string;
-  prompt: string;
+  prompt?: string;
+  message_id?: string;
 };
 
 export type ChatStreamEvent =

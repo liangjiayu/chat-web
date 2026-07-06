@@ -3,6 +3,7 @@ import type {
   ConversationMessagesResponse,
   ConversationResponse,
   DeleteConversationResponse,
+  EditMessageResponse,
 } from '@contracts/conversations';
 
 import { request } from '@/lib/request';
@@ -33,5 +34,13 @@ export function deleteConversation(conversationId: string) {
   return request<DeleteConversationResponse>({
     method: 'DELETE',
     url: `/api/conversations/${conversationId}`,
+  });
+}
+
+export function editMessage(conversationId: string, messageId: string, content: string) {
+  return request<EditMessageResponse>({
+    method: 'PATCH',
+    url: `/api/conversations/${conversationId}/messages/${messageId}`,
+    data: { content },
   });
 }
