@@ -21,7 +21,7 @@ export function ChatHeader({ isEmptyHome = false }: ChatHeaderProps) {
   return (
     <header
       className={cn(
-        'flex h-14 shrink-0 items-center justify-between bg-chat-background px-3 md:px-7',
+        'flex h-14 shrink-0 items-center justify-between bg-chat-main-background px-3 md:px-7',
         isEmptyHome ? 'border-b border-transparent md:hidden' : 'border-b border-transparent',
       )}
     >

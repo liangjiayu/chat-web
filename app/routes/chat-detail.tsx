@@ -26,7 +26,7 @@ export default function ChatDetail() {
       </div>
       <div
         className={cn(
-          'pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-linear-to-t from-[#fbfbfa] via-[#fbfbfa] to-[#fbfbfa]/0 pt-12',
+          'pointer-events-none fixed inset-x-0 bottom-0 z-10 bg-linear-to-t from-chat-main-background via-chat-main-background to-chat-main-background/0 pt-12',
           sidebarOpen ? 'md:left-[286px]' : 'md:left-16',
         )}
       >

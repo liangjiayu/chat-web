@@ -66,7 +66,7 @@ export function ConversationSidebar() {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-30 flex h-screen w-[286px] shrink-0 flex-col overflow-hidden bg-chat-background text-chat-foreground transition-all duration-200 md:relative md:translate-x-0',
+        'fixed inset-y-0 left-0 z-30 flex h-screen w-[286px] shrink-0 flex-col overflow-hidden bg-chat-sidebar-background text-chat-foreground transition-all duration-200 md:relative md:translate-x-0',
         sidebarOpen
           ? 'translate-x-0 border-r border-chat-border md:w-[286px]'
           : '-translate-x-full border-r border-chat-border md:w-16 md:translate-x-0',
@@ -186,7 +186,7 @@ export function ConversationSidebar() {
           </div>
           <div className="flex items-center gap-1">
             <Button
-              className="size-8 border-chat-border-strong bg-chat-background text-chat-foreground-muted hover:bg-chat-hover"
+              className="size-8 border-chat-border-strong bg-chat-sidebar-background text-chat-foreground-muted hover:bg-chat-hover"
               size="icon"
               variant="outline"
               title="导出"
@@ -244,7 +244,7 @@ export function ConversationSidebar() {
             >
               <Download className="h-5 w-5" />
             </Button>
-            <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full border border-chat-background bg-chat-info" />
+            <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full border border-chat-sidebar-background bg-chat-info" />
           </div>
           <button
             className="flex h-12 w-12 items-center justify-center rounded-full bg-chat-foreground-strong text-base font-semibold text-chat-primary-foreground"
@@ -313,7 +313,7 @@ function SidebarNavItem({
       <span className="text-chat-foreground-muted">{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {muted ? (
-        <span className="rounded-full border border-chat-border-strong bg-chat-background px-1.5 py-0.5 text-xs text-chat-info">
+        <span className="rounded-full border border-chat-border-strong bg-chat-sidebar-background px-1.5 py-0.5 text-xs text-chat-info">
           升级
         </span>
       ) : null}
