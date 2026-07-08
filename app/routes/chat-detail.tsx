@@ -18,7 +18,7 @@ export default function ChatDetail() {
 
   return (
     <>
-      <ChatHeader />
+      <ChatHeader title={conversation?.title} />
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto flex min-h-full w-full max-w-[760px] flex-col px-4 pt-7 pb-52 md:px-6">
           <MessageList conversation={conversation} messages={messages} />
