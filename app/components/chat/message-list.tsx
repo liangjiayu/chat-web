@@ -134,7 +134,7 @@ export function MessageList({ conversation, messages }: MessageListProps) {
               ) : (
                 <div
                   className={cn(
-                    'pr-4 text-[15px] leading-7 md:text-base',
+                    'text-[15px] leading-7 md:text-base',
                     message.role === 'user'
                       ? 'rounded-2xl bg-chat-selection px-4 py-2.5 text-chat-foreground'
                       : 'text-chat-foreground-strong',
