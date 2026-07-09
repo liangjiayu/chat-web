@@ -1,7 +1,7 @@
 import type { ConversationMessagesResponse } from '@contracts/conversations';
 import type { Conversation, Message } from '@contracts/models';
 import { useQueryClient } from '@tanstack/react-query';
-import { AudioLines, ChevronDown, Loader2, Mic, Plus, Send } from 'lucide-react';
+import { ChevronDown, Loader2, Plus, Send } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
@@ -121,9 +121,9 @@ export function ChatComposer() {
           {error}
         </div>
       ) : null}
-      <div className="pointer-events-auto rounded-[24px] border border-chat-border-strong bg-chat-surface p-3 shadow-chat-composer">
+      <div className="pointer-events-auto rounded-[28px] border border-chat-border-strong bg-chat-surface px-3.5 pt-4 pb-3 shadow-chat-composer">
         <Textarea
-          className="max-h-40 min-h-14 resize-none border-0 bg-transparent px-3 py-2 text-[15px] text-chat-foreground shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 md:text-base"
+          className="max-h-40 min-h-[54px] resize-none border-0 bg-transparent px-2.5 py-0 text-[15px] leading-7 text-chat-foreground shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 disabled:bg-transparent md:text-base"
           disabled={isSending}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
@@ -135,10 +135,10 @@ export function ChatComposer() {
           placeholder="给 Chatty 发送消息..."
           value={input}
         />
-        <div className="mt-1 flex items-center justify-between">
+        <div className="mt-2 flex min-h-9 items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Button
-              className="size-9 rounded-lg text-chat-foreground hover:bg-chat-hover"
+              className="size-9 rounded-xl text-chat-foreground hover:bg-chat-hover"
               size="icon"
               title="添加"
               type="button"
@@ -147,35 +147,18 @@ export function ChatComposer() {
               <Plus className="h-5 w-5" />
             </Button>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex min-w-0 items-center gap-1.5">
             <Button
-              className="h-8 gap-1 rounded-lg px-2 text-sm font-semibold text-chat-foreground hover:bg-chat-hover"
+              className="h-9 min-w-0 gap-1.5 rounded-xl px-2 text-sm text-chat-foreground hover:bg-chat-hover"
               type="button"
               variant="ghost"
             >
-              deepseek-v4-flash
-              <ChevronDown className="h-3.5 w-3.5 text-chat-foreground-muted" />
+              <span className="truncate font-semibold">DeepSeek</span>
+              <span className="hidden text-chat-foreground-muted sm:inline">V4 Flash</span>
+              <ChevronDown className="h-4 w-4 text-chat-foreground-muted" />
             </Button>
             <Button
-              className="size-9 rounded-lg text-chat-foreground hover:bg-chat-hover"
-              size="icon"
-              title="语音输入"
-              type="button"
-              variant="ghost"
-            >
-              <Mic className="h-4 w-4" />
-            </Button>
-            <Button
-              className="size-9 rounded-lg text-chat-foreground hover:bg-chat-hover"
-              size="icon"
-              title="语音模式"
-              type="button"
-              variant="ghost"
-            >
-              <AudioLines className="h-4 w-4" />
-            </Button>
-            <Button
-              className="size-9 rounded-lg bg-chat-foreground-strong text-chat-primary-foreground hover:bg-chat-primary-hover"
+              className="size-9 rounded-full bg-chat-foreground-strong text-chat-primary-foreground hover:bg-chat-primary-hover"
               disabled={!input.trim() || isSending}
               onClick={() => void sendMessage()}
               size="icon"
@@ -183,9 +166,9 @@ export function ChatComposer() {
               type="button"
             >
               {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4.5 w-4.5 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-4.5 w-4.5" />
               )}
             </Button>
           </div>

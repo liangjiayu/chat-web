@@ -9,6 +9,7 @@
     "typegen": "react-router typegen && wrangler types",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint .",
+    "lint:changed": "node scripts/lint-changed.js",
     "lint:fix": "oxlint . --fix",
     "format": "oxfmt . --write",
     "prepare": "husky",
@@ -53,7 +54,7 @@
     "wrangler": "4.88.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{js,ts,tsx}": [
       "oxlint --fix",
       "oxfmt --write"
     ],
