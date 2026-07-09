@@ -1,7 +1,7 @@
 import type { ConversationMessagesResponse } from '@contracts/conversations';
 import type { Conversation, Message } from '@contracts/models';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, Loader2, Plus, Send } from 'lucide-react';
+import { ArrowUp, ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
@@ -121,9 +121,9 @@ export function ChatComposer() {
           {error}
         </div>
       ) : null}
-      <div className="pointer-events-auto rounded-[28px] border border-chat-border-strong bg-chat-surface px-3.5 pt-4 pb-3 shadow-chat-composer">
+      <div className="pointer-events-auto rounded-3xl border border-chat-border bg-chat-surface px-3.5 pt-4 pb-3 shadow-[0_8px_24px_rgb(0_0_0_/_0.05)]">
         <Textarea
-          className="max-h-40 min-h-[54px] resize-none border-0 bg-transparent px-2.5 py-0 text-[15px] leading-7 text-chat-foreground shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 disabled:bg-transparent md:text-base"
+          className="max-h-40 min-h-[54px] resize-none border-0 bg-transparent px-2.5 py-0 text-base text-chat-foreground shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 disabled:bg-transparent md:text-base"
           disabled={isSending}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
@@ -135,7 +135,7 @@ export function ChatComposer() {
           placeholder="给 Chatty 发送消息..."
           value={input}
         />
-        <div className="mt-2 flex min-h-9 items-center justify-between gap-2">
+        <div className="flex min-h-9 items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Button
               className="size-9 rounded-xl text-chat-foreground hover:bg-chat-hover"
@@ -158,7 +158,7 @@ export function ChatComposer() {
               <ChevronDown className="h-4 w-4 text-chat-foreground-muted" />
             </Button>
             <Button
-              className="size-9 rounded-full bg-chat-foreground-strong text-chat-primary-foreground hover:bg-chat-primary-hover"
+              className="size-9 rounded-full bg-chat-foreground-strong text-chat-primary-foreground hover:bg-chat-primary-hover disabled:bg-chat-hover disabled:text-chat-foreground-muted disabled:opacity-100"
               disabled={!input.trim() || isSending}
               onClick={() => void sendMessage()}
               size="icon"
@@ -168,7 +168,7 @@ export function ChatComposer() {
               {isSending ? (
                 <Loader2 className="h-4.5 w-4.5 animate-spin" />
               ) : (
-                <Send className="h-4.5 w-4.5" />
+                <ArrowUp className="h-5 w-5" />
               )}
             </Button>
           </div>

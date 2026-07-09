@@ -21,11 +21,11 @@ export default function ChatDetail() {
           <div className="flex-1 px-4">
             <MessageList conversation={conversation} messages={messages} />
           </div>
-          <div className="pointer-events-none sticky bottom-0 z-10 bg-chat-main-background px-4 pt-4 pb-3">
+          <div className="pointer-events-none sticky bottom-0 z-10 pt-16">
             <ChatComposer />
-            <p className="pointer-events-auto mt-3 text-center text-xs text-chat-foreground-muted">
+            <div className="pointer-events-auto bg-chat-main-background py-2 text-center text-xs text-chat-foreground-muted">
               Chatty 可能会出错，请核对重要信息。
-            </p>
+            </div>
           </div>
         </div>
       </div>

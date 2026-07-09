@@ -102,83 +102,104 @@ export function MessageList({ conversation, messages }: MessageListProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {messages.map((message) => {
+        const isUser = message.role === 'user';
         const isEditing = editingMessageId === message.id;
-        const canEditLastUser =
-          message.role === 'user' && message.id === lastUserMessageId && !isSending;
+        const canEditLastUser = isUser && message.id === lastUserMessageId && !isSending;
 
         return (
           <article
-            className={cn(
-              'group flex gap-3',
-              message.role === 'user' ? 'justify-end' : 'justify-start',
-            )}
+            className={cn('group flex flex-col', isUser ? 'items-end' : 'items-start')}
             key={message.id}
           >
-            <div
-              className={cn(
-                message.role === 'user'
-                  ? 'flex max-w-full flex-col items-end'
-                  : 'max-w-full text-chat-foreground-strong',
-              )}
-            >
-              {isEditing ? (
-                <InlineMessageEditor
-                  content={editContent}
-                  disabled={isSending}
-                  onCancel={cancelEditing}
-                  onChange={setEditContent}
-                  onSubmit={() => void submitEdit(message)}
-                />
-              ) : (
-                <div
-                  className={cn(
-                    'text-[15px] leading-7 md:text-base',
-                    message.role === 'user'
-                      ? 'rounded-2xl bg-chat-selection px-4 py-2.5 text-chat-foreground'
-                      : 'text-chat-foreground-strong',
-                  )}
-                >
-                  {message.content ? (
-                    <MarkdownRenderer content={message.content} />
-                  ) : (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      正在生成
-                    </div>
-                  )}
-                </div>
-              )}
-              {message.content && !isEditing ? (
-                <div
-                  className={cn(
-                    'pointer-events-none mt-2 flex h-7 items-center gap-1 text-chat-foreground-muted opacity-0 transition-opacity group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100',
-                    message.role === 'user' ? 'justify-end' : 'justify-start',
-                    message.id === lastAssistantMessageId && 'pointer-events-auto opacity-100',
-                  )}
-                >
-                  <CopyMessageAction content={message.content} />
-                  {canEditLastUser ? (
-                    <MessageAction
-                      icon={<Pencil className="h-4 w-4" />}
-                      label="编辑"
-                      onClick={() => startEditing(message)}
-                    />
-                  ) : null}
-                  {message.role !== 'user' ? (
-                    <>
-                      <MessageAction icon={<ThumbsUp className="h-4 w-4" />} label="赞" />
-                      <MessageAction icon={<ThumbsDown className="h-4 w-4" />} label="踩" />
-                      <MessageAction icon={<RotateCcw className="h-4 w-4" />} label="重新生成" />
-                    </>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
+            {isEditing ? (
+              <InlineMessageEditor
+                content={editContent}
+                disabled={isSending}
+                onCancel={cancelEditing}
+                onChange={setEditContent}
+                onSubmit={() => void submitEdit(message)}
+              />
+            ) : (
+              <MessageContent content={message.content} isUser={isUser} />
+            )}
+            {message.content && !isEditing ? (
+              <MessageActions
+                canEdit={canEditLastUser}
+                content={message.content}
+                isAlwaysVisible={message.id === lastAssistantMessageId}
+                isUser={isUser}
+                onEdit={() => startEditing(message)}
+              />
+            ) : null}
           </article>
         );
       })}
+    </div>
+  );
+}
+
+function MessageContent({ content, isUser }: { content: string; isUser: boolean }) {
+  const contentNode = content ? (
+    isUser ? (
+      content
+    ) : (
+      <MarkdownRenderer content={content} />
+    )
+  ) : (
+    <div className="flex items-center gap-2 text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      正在生成
+    </div>
+  );
+
+  return (
+    <div
+      className={cn(
+        'max-w-full text-base',
+        isUser
+          ? 'rounded-full bg-[#F3F3F3] px-4 py-2.5 wrap-break-word whitespace-pre-wrap text-chat-foreground'
+          : 'text-chat-foreground-strong',
+      )}
+    >
+      {contentNode}
+    </div>
+  );
+}
+
+function MessageActions({
+  canEdit,
+  content,
+  isAlwaysVisible,
+  isUser,
+  onEdit,
+}: {
+  canEdit: boolean;
+  content: string;
+  isAlwaysVisible: boolean;
+  isUser: boolean;
+  onEdit: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        'pointer-events-none mt-1 flex h-7 items-center gap-1 text-chat-foreground-muted opacity-0 transition-opacity group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100',
+        isUser ? 'justify-end' : 'justify-start',
+        isAlwaysVisible && 'pointer-events-auto opacity-100',
+      )}
+    >
+      <CopyMessageAction content={content} />
+      {canEdit ? (
+        <MessageAction icon={<Pencil className="h-4 w-4" />} label="编辑" onClick={onEdit} />
+      ) : null}
+      {!isUser ? (
+        <>
+          <MessageAction icon={<ThumbsUp className="h-4 w-4" />} label="赞" />
+          <MessageAction icon={<ThumbsDown className="h-4 w-4" />} label="踩" />
+          <MessageAction icon={<RotateCcw className="h-4 w-4" />} label="重新生成" />
+        </>
+      ) : null}
     </div>
   );
 }
@@ -219,7 +240,7 @@ function InlineMessageEditor({
         }}
         value={content}
       />
-      <div className="mt-2 flex justify-end gap-2">
+      <div className="mt-1 flex justify-end gap-2">
         <Button disabled={disabled} onClick={onCancel} type="button" variant="outline">
           取消
         </Button>
