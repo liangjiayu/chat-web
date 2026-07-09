@@ -36,17 +36,17 @@ export function MessageList({ conversation, messages }: MessageListProps) {
     null,
   );
 
-  function startEditing(message: Message) {
+  const startEditing = (message: Message) => {
     setEditingMessageId(message.id);
     setEditContent(message.content);
-  }
+  };
 
-  function cancelEditing() {
+  const cancelEditing = () => {
     setEditingMessageId(null);
     setEditContent('');
-  }
+  };
 
-  async function submitEdit(message: Message) {
+  const submitEdit = async (message: Message) => {
     const content = editContent.trim();
 
     if (!content || isSending) {
@@ -99,7 +99,7 @@ export function MessageList({ conversation, messages }: MessageListProps) {
     } finally {
       setSending(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-8">
@@ -234,11 +234,11 @@ function InlineMessageEditor({
 function CopyMessageAction({ content }: { content: string }) {
   const [copied, setCopied] = useState(false);
 
-  async function handleCopy() {
+  const handleCopy = async () => {
     await navigator.clipboard.writeText(content);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
-  }
+  };
 
   return (
     <MessageAction

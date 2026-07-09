@@ -34,7 +34,7 @@ export function ChatComposer() {
   const queryError = conversationsQuery.error ?? messagesQuery.error;
   const error = actionError ?? (queryError instanceof Error ? queryError.message : null);
 
-  async function sendMessage() {
+  const sendMessage = async () => {
     const prompt = input.trim();
 
     if (!prompt || isSending) {
@@ -112,7 +112,7 @@ export function ChatComposer() {
         prompt,
       },
     });
-  }
+  };
 
   return (
     <>

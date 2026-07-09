@@ -54,7 +54,7 @@ export function ConversationDialogs() {
     conversations.find((conversation) => conversation.id === conversationToRenameId) ?? null;
   const deleteConversationTitle = conversationToDelete?.title ?? '该会话';
 
-  async function renameConversation() {
+  const renameConversation = async () => {
     if (!conversationToRenameId) {
       return;
     }
@@ -81,14 +81,14 @@ export function ConversationDialogs() {
     } catch (reason) {
       setActionError(reason instanceof Error ? reason.message : '重命名失败');
     }
-  }
+  };
 
-  function handleRenameSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleRenameSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void renameConversation();
-  }
+  };
 
-  async function confirmDeleteConversation() {
+  const confirmDeleteConversation = async () => {
     if (!conversationToDelete) {
       closeDeleteDialog();
       return;
@@ -115,7 +115,7 @@ export function ConversationDialogs() {
     } finally {
       closeDeleteDialog();
     }
-  }
+  };
 
   return (
     <>

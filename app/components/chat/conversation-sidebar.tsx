@@ -51,17 +51,17 @@ export function ConversationSidebar() {
   const toggleSidebar = useChatStore((state) => state.toggleSidebar);
   const activeId = id ?? null;
 
-  function loadConversation(conversationId: string) {
+  const loadConversation = (conversationId: string) => {
     void navigate(`/chat/${conversationId}`);
-  }
+  };
 
-  function startNewConversation() {
+  const startNewConversation = () => {
     if (actionError) {
       clearActionError();
     }
     resetInput();
     void navigate('/chat');
-  }
+  };
 
   return (
     <aside
