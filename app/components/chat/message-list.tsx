@@ -159,7 +159,7 @@ function MessageContent({ content, isUser }: { content: string; isUser: boolean 
       className={cn(
         'max-w-full text-base',
         isUser
-          ? 'rounded-full bg-[#F3F3F3] px-4 py-2.5 wrap-break-word whitespace-pre-wrap text-chat-foreground'
+          ? 'rounded-full bg-[#F3F3F3] px-4 py-2.5 wrap-break-word whitespace-pre-wrap'
           : 'text-chat-foreground-strong',
       )}
     >
@@ -229,7 +229,7 @@ function InlineMessageEditor({
     >
       <Textarea
         autoFocus
-        className="max-h-40 min-h-16 resize-none border-0 bg-transparent px-3 py-2 text-[15px] text-chat-foreground shadow-none focus-visible:ring-0 md:text-base"
+        className="max-h-40 min-h-16 resize-none border-0 bg-transparent px-3 py-2 text-[15px] shadow-none focus-visible:ring-0 md:text-base"
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {

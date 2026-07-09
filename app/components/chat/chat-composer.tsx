@@ -123,7 +123,7 @@ export function ChatComposer() {
       ) : null}
       <div className="pointer-events-auto rounded-3xl border border-chat-border bg-chat-surface px-3.5 pt-4 pb-3 shadow-[0_8px_24px_rgb(0_0_0_/_0.05)]">
         <Textarea
-          className="max-h-40 min-h-[54px] resize-none border-0 bg-transparent px-2.5 py-0 text-base text-chat-foreground shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 disabled:bg-transparent md:text-base"
+          className="max-h-40 min-h-[54px] resize-none border-0 bg-transparent px-2.5 py-0 text-base shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 disabled:bg-transparent md:text-base"
           disabled={isSending}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
@@ -138,7 +138,7 @@ export function ChatComposer() {
         <div className="flex min-h-9 items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Button
-              className="size-9 rounded-xl text-chat-foreground hover:bg-chat-hover"
+              className="size-9 rounded-xl hover:bg-chat-hover"
               size="icon"
               title="添加"
               type="button"
@@ -149,7 +149,7 @@ export function ChatComposer() {
           </div>
           <div className="flex min-w-0 items-center gap-1.5">
             <Button
-              className="h-9 min-w-0 gap-1.5 rounded-xl px-2 text-sm text-chat-foreground hover:bg-chat-hover"
+              className="h-9 min-w-0 gap-1.5 rounded-xl px-2 text-sm hover:bg-chat-hover"
               type="button"
               variant="ghost"
             >

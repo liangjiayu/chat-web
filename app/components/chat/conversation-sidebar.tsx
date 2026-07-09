@@ -66,7 +66,7 @@ export function ConversationSidebar() {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-30 flex h-screen w-[286px] shrink-0 flex-col overflow-hidden bg-chat-sidebar-background text-chat-foreground transition-all duration-200 md:relative md:translate-x-0',
+        'fixed inset-y-0 left-0 z-30 flex h-screen w-[286px] shrink-0 flex-col overflow-hidden bg-chat-sidebar-background transition-all duration-200 md:relative md:translate-x-0',
         sidebarOpen
           ? 'translate-x-0 border-r border-chat-border md:w-[286px]'
           : '-translate-x-full border-r border-chat-border md:w-16 md:translate-x-0',
@@ -110,7 +110,7 @@ export function ConversationSidebar() {
 
         <div className="space-y-1 px-2 py-2">
           <Button
-            className="h-9 w-full justify-start gap-3 rounded-lg px-2.5 text-[15px] font-medium text-chat-foreground hover:bg-chat-hover"
+            className="h-9 w-full justify-start gap-3 rounded-lg px-2.5 text-[15px] font-medium hover:bg-chat-hover"
             disabled={isSending}
             onClick={startNewConversation}
             variant="ghost"
@@ -149,7 +149,7 @@ export function ConversationSidebar() {
                         'group flex h-8 items-center gap-1 rounded-lg px-2 text-sm',
                         activeId === conversation.id
                           ? 'bg-chat-selection text-chat-foreground-strong'
-                          : 'text-chat-foreground hover:bg-chat-hover',
+                          : 'hover:bg-chat-hover',
                       )}
                       key={conversation.id}
                     >
@@ -180,7 +180,7 @@ export function ConversationSidebar() {
               L
             </div>
             <div>
-              <div className="text-sm font-semibold text-chat-foreground">LJY</div>
+              <div className="text-sm font-semibold">LJY</div>
               <div className="text-xs text-chat-foreground-muted">本地单用户</div>
             </div>
           </div>
@@ -210,7 +210,7 @@ export function ConversationSidebar() {
       >
         <AppLogo className="mb-3 h-8 w-8" />
         <Button
-          className="size-8 text-chat-foreground hover:bg-chat-hover"
+          className="size-8 hover:bg-chat-hover"
           onClick={toggleSidebar}
           size="icon"
           title="展开侧栏"
@@ -236,12 +236,7 @@ export function ConversationSidebar() {
 
         <div className="mt-auto flex flex-col items-center gap-7 pb-2">
           <div className="relative">
-            <Button
-              className="size-8 text-chat-foreground hover:bg-chat-hover"
-              size="icon"
-              variant="ghost"
-              title="导出"
-            >
+            <Button className="size-8 hover:bg-chat-hover" size="icon" variant="ghost" title="导出">
               <Download className="h-5 w-5" />
             </Button>
             <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full border border-chat-sidebar-background bg-chat-info" />
@@ -306,7 +301,7 @@ function SidebarNavItem({
     <button
       className={cn(
         'flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-left text-[15px] font-medium hover:bg-chat-hover',
-        muted ? 'text-chat-foreground-muted' : 'text-chat-foreground',
+        muted && 'text-chat-foreground-muted',
       )}
       type="button"
     >
@@ -339,7 +334,7 @@ function CollapsedSidebarButton({
   return (
     <Button
       className={cn(
-        'size-8 text-chat-foreground hover:bg-chat-hover',
+        'size-8 hover:bg-chat-hover',
         muted && 'text-chat-foreground-muted hover:text-chat-foreground-muted',
         rounded && 'rounded-full bg-chat-hover',
       )}
