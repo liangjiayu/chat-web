@@ -12,11 +12,13 @@
 - 代码规范：oxlint、oxfmt、Husky、lint-staged
 - 包管理器：pnpm
 
+## 脚本运行策略
+
+- 普通修改或小范围改动完成后，大部分情况下运行 `pnpm exec lint-staged` 即可
+- 大范围改动完成后，运行 `pnpm exec lint-staged` 和 `pnpm typecheck`；功能重构需要额外运行 `pnpm build`
+- 提交代码前不需要额外运行脚本，交给已有的 Husky pre-commit hook 执行 `lint-staged`
+
 ## 开发规范
-
-### 需求澄清
-
-- 当用户的提示词较模糊、目标不完整或关键约束缺失时，优先使用 `grilling` 技能逐步追问，先把需求、边界和决策点确认清楚，再进入实现
 
 ### 注释规范
 
