@@ -136,17 +136,15 @@ export function ChatComposer() {
           value={input}
         />
         <div className="flex min-h-9 items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Button
-              className="size-9 rounded-xl hover:bg-chat-hover"
-              size="icon"
-              title="添加"
-              type="button"
-              variant="ghost"
-            >
-              <Plus className="h-5 w-5" />
-            </Button>
-          </div>
+          <Button
+            className="size-9 rounded-xl hover:bg-chat-hover"
+            size="icon"
+            title="添加"
+            type="button"
+            variant="ghost"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
           <div className="flex min-w-0 items-center gap-1.5">
             <Button
               className="h-9 min-w-0 gap-1.5 rounded-xl px-2 text-sm hover:bg-chat-hover"

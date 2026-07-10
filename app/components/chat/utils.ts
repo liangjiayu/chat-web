@@ -1,6 +1,6 @@
 import type { Conversation } from '@contracts/models';
 
-export type ConversationGroup = {
+type ConversationGroup = {
   label: string;
   items: Conversation[];
 };

@@ -2,7 +2,6 @@
 @import 'tw-animate-css';
 
 @theme inline {
-  --color-chat-background: var(--chat-background);
   --color-chat-main-background: var(--chat-main-background);
   --color-chat-sidebar-background: var(--chat-sidebar-background);
   --color-chat-surface: var(--chat-surface);
@@ -22,7 +21,6 @@
 }
 
 :root {
-  --chat-background: #ffffff;
   --chat-main-background: #ffffff;
   --chat-sidebar-background: #f7f7f7;
   --chat-surface: #ffffff;
