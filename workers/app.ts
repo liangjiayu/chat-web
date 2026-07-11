@@ -1,16 +1,19 @@
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { createRequestHandler } from 'react-router';
 
-import { chatRoute } from './modules/chat/route';
-import { conversationsRoute } from './modules/conversations/route';
+import { api } from './api';
 import { jsonError } from './shared/response';
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
 
-app.route('/api', conversationsRoute);
-app.route('/api', chatRoute);
+app.route('/api', api);
 
 app.onError((error) => {
+  if (error instanceof HTTPException) {
+    return error.getResponse();
+  }
+
   if (error instanceof SyntaxError) {
     return jsonError('请求体不是合法 JSON');
   }

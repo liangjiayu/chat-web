@@ -1,10 +1,4 @@
-import type { Message } from './models';
-
-export type ChatRequest = {
-  conversation_id: string;
-  prompt?: string;
-  message_id?: string;
-};
+import type { Message } from './api.generated';
 
 export type ChatStreamEvent =
   | { event: 'message'; data: { message: { v: string } } }

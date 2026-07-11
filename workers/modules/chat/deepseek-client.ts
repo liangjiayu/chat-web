@@ -1,5 +1,3 @@
-import type { MessageHistory } from '@contracts/models';
-
 import { DEEPSEEK_CHAT_COMPLETIONS_URL } from '../../constants';
 import { makeTitleMessages, parseTitleContent } from './title';
 
@@ -35,7 +33,10 @@ export async function generateConversationTitle(input: {
 export function requestChatCompletion(input: {
   apiKey: string;
   model: string;
-  messages: MessageHistory[];
+  messages: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }>;
 }) {
   return fetch(DEEPSEEK_CHAT_COMPLETIONS_URL, {
     method: 'POST',

@@ -1,9 +1,11 @@
+import type { QueryClient } from '@tanstack/react-query';
+
 import type {
   ConversationListResponse,
   ConversationMessagesResponse,
-} from '@contracts/conversations';
-import type { Conversation, Message } from '@contracts/models';
-import type { QueryClient } from '@tanstack/react-query';
+  Conversation,
+  Message,
+} from '@/types/api.generated';
 
 import { conversationKeys, messageKeys } from './conversations';
 

@@ -1,11 +1,10 @@
-import type { ChatRequest } from '@contracts/chat';
-import type { Conversation } from '@contracts/models';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { setConversationTitleCache, setMessagesCache } from '@/queries/conversation-cache';
 import { conversationKeys, messageKeys } from '@/queries/conversations';
 import { streamChat } from '@/services/chat-stream';
 import { useChatStore } from '@/stores';
+import type { ChatRequest, Conversation } from '@/types/api.generated';
 
 type RunCompletionInput = {
   conversation: Conversation;

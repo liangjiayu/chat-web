@@ -1,4 +1,5 @@
-import type { ChatRequest, ChatStreamEvent } from '@contracts/chat';
+import type { ChatRequest } from '@/types/api.generated';
+import type { ChatStreamEvent } from '@/types/chat-stream';
 
 function parseSseBlock(block: string): ChatStreamEvent | null {
   let event = 'message';

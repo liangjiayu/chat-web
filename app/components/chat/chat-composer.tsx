@@ -1,5 +1,3 @@
-import type { ConversationMessagesResponse } from '@contracts/conversations';
-import type { Conversation, Message } from '@contracts/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowUp, ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
@@ -9,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { setConversationsCache, setMessagesCache } from '@/queries/conversation-cache';
 import { messageKeys, useConversationsQuery, useMessagesQuery } from '@/queries/conversations';
 import { useChatStore } from '@/stores';
+import type { Conversation, ConversationMessagesResponse, Message } from '@/types/api.generated';
 
 import { useChatCompletion } from './use-chat-completion';
 import { sortConversationsByUpdatedAt } from './utils';

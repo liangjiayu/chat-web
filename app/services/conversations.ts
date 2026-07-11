@@ -1,12 +1,11 @@
+import { request } from '@/lib/request';
 import type {
   ConversationListResponse,
   ConversationMessagesResponse,
   ConversationResponse,
   DeleteConversationResponse,
   EditMessageResponse,
-} from '@contracts/conversations';
-
-import { request } from '@/lib/request';
+} from '@/types/api.generated';
 
 export function getConversations() {
   return request<ConversationListResponse>({

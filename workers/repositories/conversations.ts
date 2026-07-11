@@ -1,4 +1,3 @@
-import type { Conversation } from '@contracts/models';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { LOCAL_USER_ID } from '../constants';
@@ -46,8 +45,8 @@ export async function createConversation(
     model: string;
     now: number;
   },
-): Promise<Conversation> {
-  const conversation: Conversation = {
+) {
+  const conversation = {
     id: input.id,
     title: input.title,
     model: input.model,
