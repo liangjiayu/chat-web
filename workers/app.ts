@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { createRequestHandler } from 'react-router';
 
-import { chatRoute } from './routes/chat';
-import { conversationsRoute } from './routes/conversations';
-import { jsonError } from './utils/response';
+import { chatRoute } from './modules/chat/route';
+import { conversationsRoute } from './modules/conversations/route';
+import { jsonError } from './shared/response';
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
 

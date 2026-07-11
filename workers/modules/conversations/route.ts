@@ -5,7 +5,7 @@ import type {
 } from '@contracts/conversations';
 import { Hono } from 'hono';
 
-import { DEFAULT_CONVERSATION_TITLE, DEFAULT_MODEL } from '../constants';
+import { DEFAULT_CONVERSATION_TITLE, DEFAULT_MODEL } from '../../constants';
 import {
   createConversation,
   deleteConversation,
@@ -13,15 +13,15 @@ import {
   getConversations,
   renameConversation,
   touchConversation,
-} from '../repositories/conversations';
+} from '../../repositories/conversations';
 import {
   deleteAssistantMessagesAfter,
   getLastUserMessage,
   getMessage,
   getMessages,
   updateMessageContent,
-} from '../repositories/messages';
-import { jsonError } from '../utils/response';
+} from '../../repositories/messages';
+import { jsonError } from '../../shared/response';
 
 export const conversationsRoute = new Hono<{ Bindings: Cloudflare.Env }>();
 
