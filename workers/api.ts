@@ -13,7 +13,7 @@ export const api = new OpenAPIHono<{ Bindings: Cloudflare.Env }>({
 api.route('/', conversationsRoute);
 api.route('/', chatRoute);
 
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   api.doc('/openapi.json', openApiConfig);
   api.get('/docs', swaggerUI({ url: '/api/openapi.json' }));
 }
