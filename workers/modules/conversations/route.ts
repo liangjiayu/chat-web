@@ -1,22 +1,7 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
-import { DEFAULT_CONVERSATION_TITLE, DEFAULT_MODEL } from '../../constants';
 import { validationHook } from '../../openapi/validation';
-import {
-  createConversation,
-  deleteConversation,
-  getConversation,
-  getConversations,
-  renameConversation,
-  touchConversation,
-} from '../../repositories/conversations';
-import {
-  deleteAssistantMessagesAfter,
-  getLastUserMessage,
-  getMessage,
-  getMessages,
-  updateMessageContent,
-} from '../../repositories/messages';
 import { httpError } from '../../shared/response';
 import {
   ConversationIdParamsSchema,
@@ -31,10 +16,31 @@ import {
   MessageParamsSchema,
   RenameConversationRequestSchema,
 } from './schema';
+import {
+  ConversationServiceError,
+  createNewConversation,
+  deleteExistingConversation,
+  editLastUserMessage,
+  getConversationDetail,
+  listConversations,
+  renameExistingConversation,
+} from './service';
 
 export const conversationsRoute = new OpenAPIHono<{ Bindings: Cloudflare.Env }>({
   defaultHook: validationHook,
 });
+
+async function runService<T>(operation: () => Promise<T>) {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof ConversationServiceError) {
+      httpError(error.message, error.status as ContentfulStatusCode);
+    }
+
+    throw error;
+  }
+}
 
 const listRoute = createRoute({
   method: 'get',
@@ -49,7 +55,7 @@ const listRoute = createRoute({
   },
 });
 
-conversationsRoute.openapi(listRoute, async (c) => c.json(await getConversations(c.env.DB), 200));
+conversationsRoute.openapi(listRoute, async (c) => c.json(await listConversations(c.env.DB), 200));
 
 const createRouteDefinition = createRoute({
   method: 'post',
@@ -72,11 +78,7 @@ const createRouteDefinition = createRoute({
 
 conversationsRoute.openapi(createRouteDefinition, async (c) => {
   const body = c.req.valid('json');
-  const id = crypto.randomUUID();
-  const now = Date.now();
-  const title = body.title?.trim() || DEFAULT_CONVERSATION_TITLE;
-  const model = body.model || c.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
-  const conversation = await createConversation(c.env.DB, { id, title, model, now });
+  const conversation = await createNewConversation({ env: c.env, ...body });
 
   return c.json({ conversation }, 200);
 });
@@ -104,13 +106,9 @@ const renameRoute = createRoute({
 conversationsRoute.openapi(renameRoute, async (c) => {
   const { id } = c.req.valid('param');
   const { title } = c.req.valid('json');
-  const result = await renameConversation(c.env.DB, { id, title, now: Date.now() });
+  const conversation = await runService(() => renameExistingConversation(c.env.DB, id, title));
 
-  if (!result.meta.changes) {
-    httpError('会话不存在', 404);
-  }
-
-  return c.json((await getConversation(c.env.DB, id))!, 200);
+  return c.json(conversation, 200);
 });
 
 const deleteRoute = createRoute({
@@ -129,11 +127,7 @@ const deleteRoute = createRoute({
 
 conversationsRoute.openapi(deleteRoute, async (c) => {
   const { id } = c.req.valid('param');
-  const result = await deleteConversation(c.env.DB, id, Date.now());
-
-  if (!result.meta.changes) {
-    httpError('会话不存在', 404);
-  }
+  await runService(() => deleteExistingConversation(c.env.DB, id));
 
   return c.json({ success: true as const }, 200);
 });
@@ -161,35 +155,7 @@ const editMessageRoute = createRoute({
 conversationsRoute.openapi(editMessageRoute, async (c) => {
   const { conversationId, messageId } = c.req.valid('param');
   const { content } = c.req.valid('json');
-  const conversation = await getConversation(c.env.DB, conversationId);
-
-  if (!conversation) {
-    httpError('会话不存在', 404);
-  }
-
-  const message = await getMessage(c.env.DB, conversationId, messageId);
-
-  if (!message) {
-    httpError('消息不存在', 404);
-  }
-
-  if (message.role !== 'user') {
-    httpError('只能编辑用户消息', 400);
-  }
-
-  const lastUserMessage = await getLastUserMessage(c.env.DB, conversationId);
-
-  if (lastUserMessage?.id !== message.id) {
-    httpError('只能编辑最后一条用户消息', 400);
-  }
-
-  const now = Date.now();
-  await updateMessageContent(c.env.DB, { conversationId, id: message.id, content, now });
-  await deleteAssistantMessagesAfter(c.env.DB, {
-    conversationId,
-    createdAt: message.created_at,
-  });
-  await touchConversation(c.env.DB, conversationId, now);
+  await runService(() => editLastUserMessage(c.env.DB, conversationId, messageId, content));
 
   return c.json({ success: true as const }, 200);
 });
@@ -210,11 +176,7 @@ const detailRoute = createRoute({
 
 conversationsRoute.openapi(detailRoute, async (c) => {
   const { id } = c.req.valid('param');
-  const conversation = await getConversation(c.env.DB, id);
+  const result = await runService(() => getConversationDetail(c.env.DB, id));
 
-  if (!conversation) {
-    httpError('会话不存在', 404);
-  }
-
-  return c.json({ conversation, messages: await getMessages(c.env.DB, id) }, 200);
+  return c.json(result, 200);
 });

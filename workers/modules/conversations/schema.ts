@@ -23,7 +23,6 @@ export const MessageParamsSchema = z.object({
 export const CreateConversationRequestSchema = z
   .object({
     title: z.string().optional(),
-    model: z.string().optional(),
   })
   .openapi('CreateConversationRequest');
 

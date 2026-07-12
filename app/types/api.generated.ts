@@ -252,7 +252,6 @@ export interface components {
     };
     CreateConversationRequest: {
       title?: string;
-      model?: string;
     };
     ConversationResponse: {
       id: string;

@@ -29,7 +29,7 @@ export async function completeChat(input: {
   prompt?: string;
 }) {
   const now = Date.now();
-  const model = input.env.DEEPSEEK_MODEL || DEFAULT_MODEL;
+  const model = DEFAULT_MODEL;
   let conversation = await getConversation(input.env.DB, input.conversationId);
   let isNewConversation = false;
   let initialTitle = conversation?.title ?? '';

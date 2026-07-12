@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowUp, ChevronDown, Loader2, Plus } from 'lucide-react';
+import { ArrowUp, Loader2, Plus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
@@ -144,16 +144,7 @@ export function ChatComposer() {
           >
             <Plus className="h-5 w-5" />
           </Button>
-          <div className="flex min-w-0 items-center gap-1.5">
-            <Button
-              className="h-9 min-w-0 gap-1.5 rounded-xl px-2 text-sm hover:bg-chat-hover"
-              type="button"
-              variant="ghost"
-            >
-              <span className="truncate font-semibold">DeepSeek</span>
-              <span className="hidden text-chat-foreground-muted sm:inline">V4 Flash</span>
-              <ChevronDown className="h-4 w-4 text-chat-foreground-muted" />
-            </Button>
+          <div className="flex min-w-0 items-center">
             <Button
               className="size-9 rounded-full bg-chat-foreground-strong text-chat-primary-foreground hover:bg-chat-primary-hover disabled:bg-chat-hover disabled:text-chat-foreground-muted disabled:opacity-100"
               disabled={!input.trim() || isSending}
