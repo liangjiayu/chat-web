@@ -4,6 +4,12 @@ import { useNavigate, useParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  DEFAULT_CHAT_MODEL,
+  DEFAULT_CONVERSATION_TITLE,
+  MESSAGE_ROLE,
+  MESSAGE_STATUS,
+} from '@/constants';
 import { setConversationsCache, setMessagesCache } from '@/queries/conversation-cache';
 import { messageKeys, useConversationsQuery, useMessagesQuery } from '@/queries/conversations';
 import { useChatStore } from '@/stores';
@@ -50,8 +56,8 @@ export function ChatComposer() {
     const createdAt = Date.now();
     const fallbackConversation: Conversation = activeConversation ?? {
       id: optimisticConversationId,
-      title: '新对话',
-      model: 'deepseek-v4-flash',
+      title: DEFAULT_CONVERSATION_TITLE,
+      model: DEFAULT_CHAT_MODEL,
       metadata: {},
       created_at: createdAt,
       updated_at: createdAt,
@@ -60,10 +66,10 @@ export function ChatComposer() {
       {
         id: optimisticUserId,
         conversation_id: optimisticConversationId,
-        role: 'user',
+        role: MESSAGE_ROLE.USER,
         content: prompt,
-        model: activeConversation?.model ?? 'deepseek-v4-flash',
-        status: 'done',
+        model: activeConversation?.model ?? DEFAULT_CHAT_MODEL,
+        status: MESSAGE_STATUS.DONE,
         metadata: {},
         created_at: createdAt,
         updated_at: createdAt,
@@ -71,10 +77,10 @@ export function ChatComposer() {
       {
         id: optimisticAssistantId,
         conversation_id: optimisticConversationId,
-        role: 'assistant',
+        role: MESSAGE_ROLE.ASSISTANT,
         content: '',
-        model: activeConversation?.model ?? 'deepseek-v4-flash',
-        status: 'streaming',
+        model: activeConversation?.model ?? DEFAULT_CHAT_MODEL,
+        status: MESSAGE_STATUS.STREAMING,
         metadata: {},
         created_at: createdAt,
         updated_at: createdAt,

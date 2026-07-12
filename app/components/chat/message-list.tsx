@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { MESSAGE_ROLE, MESSAGE_STATUS } from '@/constants';
 import { cn } from '@/lib/utils';
 import { setMessagesCache } from '@/queries/conversation-cache';
 import { editMessage } from '@/services/conversations';
@@ -28,11 +29,12 @@ export function MessageList({ conversation, messages }: MessageListProps) {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
   const lastAssistantMessageId = messages.reduce<string | null>(
-    (lastId, message) => (message.role === 'assistant' && message.content ? message.id : lastId),
+    (lastId, message) =>
+      message.role === MESSAGE_ROLE.ASSISTANT && message.content ? message.id : lastId,
     null,
   );
   const lastUserMessageId = messages.reduce<string | null>(
-    (lastId, message) => (message.role === 'user' ? message.id : lastId),
+    (lastId, message) => (message.role === MESSAGE_ROLE.USER ? message.id : lastId),
     null,
   );
 
@@ -69,15 +71,17 @@ export function MessageList({ conversation, messages }: MessageListProps) {
 
       setMessagesCache(queryClient, message.conversation_id, conversation, (current) => [
         ...current
-          .filter((item) => item.role !== 'assistant' || item.created_at <= message.created_at)
+          .filter(
+            (item) => item.role !== MESSAGE_ROLE.ASSISTANT || item.created_at <= message.created_at,
+          )
           .map((item) => (item.id === message.id ? { ...item, content, updated_at: now } : item)),
         {
           id: optimisticAssistantId,
           conversation_id: message.conversation_id,
-          role: 'assistant',
+          role: MESSAGE_ROLE.ASSISTANT,
           content: '',
           model: conversation.model,
-          status: 'streaming',
+          status: MESSAGE_STATUS.STREAMING,
           metadata: {},
           created_at: now,
           updated_at: now,
@@ -104,7 +108,7 @@ export function MessageList({ conversation, messages }: MessageListProps) {
   return (
     <div className="space-y-5">
       {messages.map((message) => {
-        const isUser = message.role === 'user';
+        const isUser = message.role === MESSAGE_ROLE.USER;
         const isEditing = editingMessageId === message.id;
         const canEditLastUser = isUser && message.id === lastUserMessageId && !isSending;
 

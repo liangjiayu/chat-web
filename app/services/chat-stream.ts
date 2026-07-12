@@ -1,8 +1,9 @@
+import { CHAT_STREAM_EVENT } from '@/constants';
 import type { ChatRequest } from '@/types/api-generated';
 import type { ChatStreamEvent } from '@/types/chat-stream';
 
 function parseSseBlock(block: string): ChatStreamEvent | null {
-  let event = 'message';
+  let event: string = CHAT_STREAM_EVENT.MESSAGE;
   let data = '';
 
   for (const line of block.split('\n')) {

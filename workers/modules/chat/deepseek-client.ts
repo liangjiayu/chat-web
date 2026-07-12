@@ -1,4 +1,4 @@
-import { DEEPSEEK_CHAT_COMPLETIONS_URL } from '../../constants';
+import { DEEPSEEK_CHAT_COMPLETIONS_URL, DEFAULT_MODEL } from '../../constants';
 
 function makeTitleMessages(prompt: string) {
   return [
@@ -25,11 +25,7 @@ function parseTitleContent(content: string) {
   return title || null;
 }
 
-export async function generateConversationTitle(input: {
-  apiKey: string;
-  model: string;
-  prompt: string;
-}) {
+export async function generateConversationTitle(input: { apiKey: string; prompt: string }) {
   const response = await fetch(DEEPSEEK_CHAT_COMPLETIONS_URL, {
     method: 'POST',
     headers: {
@@ -37,7 +33,7 @@ export async function generateConversationTitle(input: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: input.model,
+      model: DEFAULT_MODEL,
       messages: makeTitleMessages(input.prompt),
       stream: false,
     }),
@@ -56,7 +52,6 @@ export async function generateConversationTitle(input: {
 
 export function requestChatCompletion(input: {
   apiKey: string;
-  model: string;
   messages: Array<{
     role: 'system' | 'user' | 'assistant';
     content: string;
@@ -69,7 +64,7 @@ export function requestChatCompletion(input: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: input.model,
+      model: DEFAULT_MODEL,
       messages: input.messages,
       stream: true,
     }),

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 
+import { CHAT_STREAM_EVENT, MESSAGE_STATUS } from '@/constants';
 import { setConversationTitleCache, setMessagesCache } from '@/queries/conversation-cache';
 import { conversationKeys, messageKeys } from '@/queries/conversations';
 import { streamChat } from '@/services/chat-stream';
@@ -26,7 +27,7 @@ export function useChatCompletion() {
   }: RunCompletionInput) {
     try {
       for await (const parsed of streamChat(request)) {
-        if (parsed.event === 'message') {
+        if (parsed.event === CHAT_STREAM_EVENT.MESSAGE) {
           setMessagesCache(queryClient, conversationId, conversation, (current) =>
             current.map((item) =>
               item.id === optimisticAssistantId
@@ -36,14 +37,14 @@ export function useChatCompletion() {
           );
         }
 
-        if (parsed.event === 'done') {
+        if (parsed.event === CHAT_STREAM_EVENT.DONE) {
           setMessagesCache(queryClient, conversationId, conversation, (current) =>
             current.map((item) =>
               item.id === optimisticAssistantId
                 ? {
                     ...item,
                     id: parsed.data.message.id,
-                    status: 'done',
+                    status: MESSAGE_STATUS.DONE,
                     metadata: parsed.data.message.metadata,
                     created_at: parsed.data.message.created_at,
                     updated_at: parsed.data.message.updated_at,
@@ -58,11 +59,11 @@ export function useChatCompletion() {
           });
         }
 
-        if (parsed.event === 'title') {
+        if (parsed.event === CHAT_STREAM_EVENT.TITLE) {
           setConversationTitleCache(queryClient, conversationId, parsed.data.content);
         }
 
-        if (parsed.event === 'error') {
+        if (parsed.event === CHAT_STREAM_EVENT.ERROR) {
           throw new Error(parsed.data.message);
         }
       }

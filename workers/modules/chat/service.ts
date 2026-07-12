@@ -21,7 +21,6 @@ export async function completeChat(input: {
   prompt?: string;
 }) {
   const now = Date.now();
-  const model = DEFAULT_MODEL;
   let conversation = await getConversation(input.env.DB, input.conversationId);
   let isNewConversation = false;
   let initialTitle = conversation?.title ?? '';
@@ -59,7 +58,7 @@ export async function completeChat(input: {
     conversation = await createConversation(input.env.DB, {
       id: input.conversationId,
       title: initialTitle,
-      model,
+      model: DEFAULT_MODEL,
       now,
     });
   }
@@ -74,7 +73,7 @@ export async function completeChat(input: {
       conversationId: input.conversationId,
       role: 'user',
       content: prompt,
-      model,
+      model: DEFAULT_MODEL,
       status: 'done',
       now,
     });
@@ -84,7 +83,6 @@ export async function completeChat(input: {
   const history = await getMessageHistory(input.env.DB, input.conversationId);
   const upstream = await requestChatCompletion({
     apiKey: input.env.DEEPSEEK_API_KEY,
-    model,
     messages: history,
   });
 
@@ -96,7 +94,6 @@ export async function completeChat(input: {
   const titlePromise = isNewConversation
     ? generateConversationTitle({
         apiKey: input.env.DEEPSEEK_API_KEY,
-        model,
         prompt,
       }).catch(() => null)
     : Promise.resolve(null);
@@ -105,7 +102,7 @@ export async function completeChat(input: {
     db: input.env.DB,
     upstream,
     conversationId: input.conversationId,
-    model,
+    model: DEFAULT_MODEL,
     isNewConversation,
     initialTitle,
     titlePromise,
