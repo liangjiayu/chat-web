@@ -14,15 +14,7 @@ import {
   getMessages,
   updateMessageContent,
 } from '../../repositories/messages';
-
-export class ConversationServiceError extends Error {
-  constructor(
-    message: string,
-    readonly status = 400,
-  ) {
-    super(message);
-  }
-}
+import { BusinessError } from '../../shared/errors';
 
 export function listConversations(db: D1Database) {
   return getConversations(db);
@@ -41,7 +33,7 @@ export async function getConversationDetail(db: D1Database, id: string) {
   const conversation = await getConversation(db, id);
 
   if (!conversation) {
-    throw new ConversationServiceError('会话不存在', 404);
+    throw new BusinessError('会话不存在', 404);
   }
 
   return { conversation, messages: await getMessages(db, id) };
@@ -51,7 +43,7 @@ export async function renameExistingConversation(db: D1Database, id: string, tit
   const result = await renameConversation(db, { id, title, now: Date.now() });
 
   if (!result.meta.changes) {
-    throw new ConversationServiceError('会话不存在', 404);
+    throw new BusinessError('会话不存在', 404);
   }
 
   return (await getConversation(db, id))!;
@@ -61,7 +53,7 @@ export async function deleteExistingConversation(db: D1Database, id: string) {
   const result = await deleteConversation(db, id, Date.now());
 
   if (!result.meta.changes) {
-    throw new ConversationServiceError('会话不存在', 404);
+    throw new BusinessError('会话不存在', 404);
   }
 }
 
@@ -74,23 +66,23 @@ export async function editLastUserMessage(
   const conversation = await getConversation(db, conversationId);
 
   if (!conversation) {
-    throw new ConversationServiceError('会话不存在', 404);
+    throw new BusinessError('会话不存在', 404);
   }
 
   const message = await getMessage(db, conversationId, messageId);
 
   if (!message) {
-    throw new ConversationServiceError('消息不存在', 404);
+    throw new BusinessError('消息不存在', 404);
   }
 
   if (message.role !== 'user') {
-    throw new ConversationServiceError('只能编辑用户消息');
+    throw new BusinessError('只能编辑用户消息');
   }
 
   const lastUserMessage = await getLastUserMessage(db, conversationId);
 
   if (lastUserMessage?.id !== message.id) {
-    throw new ConversationServiceError('只能编辑最后一条用户消息');
+    throw new BusinessError('只能编辑最后一条用户消息');
   }
 
   const now = Date.now();

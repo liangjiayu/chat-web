@@ -10,17 +10,9 @@ import {
   getMessage,
   getMessageHistory,
 } from '../../repositories/messages';
+import { BusinessError } from '../../shared/errors';
 import { generateConversationTitle, requestChatCompletion } from './deepseek-client';
 import { createChatStream } from './stream';
-
-export class ChatServiceError extends Error {
-  constructor(
-    message: string,
-    readonly status = 400,
-  ) {
-    super(message);
-  }
-}
 
 export async function completeChat(input: {
   env: Cloudflare.Env;
@@ -37,7 +29,7 @@ export async function completeChat(input: {
 
   if (input.editedMessageId) {
     if (!conversation) {
-      throw new ChatServiceError('会话不存在', 404);
+      throw new BusinessError('会话不存在', 404);
     }
 
     const editedMessage = await getMessage(
@@ -47,17 +39,17 @@ export async function completeChat(input: {
     );
 
     if (!editedMessage) {
-      throw new ChatServiceError('消息不存在', 404);
+      throw new BusinessError('消息不存在', 404);
     }
 
     if (editedMessage.role !== 'user') {
-      throw new ChatServiceError('只能编辑用户消息');
+      throw new BusinessError('只能编辑用户消息');
     }
 
     const lastUserMessage = await getLastUserMessage(input.env.DB, input.conversationId);
 
     if (lastUserMessage?.id !== editedMessage.id) {
-      throw new ChatServiceError('只能编辑最后一条用户消息');
+      throw new BusinessError('只能编辑最后一条用户消息');
     }
 
     prompt = editedMessage.content.trim();
@@ -73,7 +65,7 @@ export async function completeChat(input: {
   }
 
   if (!prompt) {
-    throw new ChatServiceError('消息不能为空');
+    throw new BusinessError('消息不能为空');
   }
 
   if (!input.editedMessageId) {
@@ -98,7 +90,7 @@ export async function completeChat(input: {
 
   if (!upstream.ok || !upstream.body) {
     const detail = await upstream.text().catch(() => '');
-    throw new ChatServiceError(detail || 'DeepSeek 请求失败', upstream.status || 502);
+    throw new BusinessError(detail || 'DeepSeek 请求失败', upstream.status || 502);
   }
 
   const titlePromise = isNewConversation

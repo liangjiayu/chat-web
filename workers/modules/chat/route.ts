@@ -1,10 +1,9 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
 import { validationHook } from '../../openapi/validation';
 import { httpError } from '../../shared/response';
 import { ChatRequestSchema } from './schema';
-import { ChatServiceError, completeChat } from './service';
+import { completeChat } from './service';
 
 export const chatRoute = new OpenAPIHono<{ Bindings: Cloudflare.Env }>({
   defaultHook: validationHook,
@@ -37,18 +36,10 @@ chatRoute.openapi(completionRoute, async (c) => {
 
   const body = c.req.valid('json');
 
-  try {
-    return await completeChat({
-      env: c.env,
-      conversationId: body.conversation_id,
-      editedMessageId: body.message_id,
-      prompt: body.prompt,
-    });
-  } catch (error) {
-    if (error instanceof ChatServiceError) {
-      httpError(error.message, error.status as ContentfulStatusCode);
-    }
-
-    throw error;
-  }
+  return completeChat({
+    env: c.env,
+    conversationId: body.conversation_id,
+    editedMessageId: body.message_id,
+    prompt: body.prompt,
+  });
 });

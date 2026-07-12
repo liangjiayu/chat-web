@@ -1,8 +1,6 @@
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
 import { validationHook } from '../../openapi/validation';
-import { httpError } from '../../shared/response';
 import {
   ConversationIdParamsSchema,
   ConversationListResponseSchema,
@@ -17,7 +15,6 @@ import {
   RenameConversationRequestSchema,
 } from './schema';
 import {
-  ConversationServiceError,
   createNewConversation,
   deleteExistingConversation,
   editLastUserMessage,
@@ -29,18 +26,6 @@ import {
 export const conversationsRoute = new OpenAPIHono<{ Bindings: Cloudflare.Env }>({
   defaultHook: validationHook,
 });
-
-async function runService<T>(operation: () => Promise<T>) {
-  try {
-    return await operation();
-  } catch (error) {
-    if (error instanceof ConversationServiceError) {
-      httpError(error.message, error.status as ContentfulStatusCode);
-    }
-
-    throw error;
-  }
-}
 
 const listRoute = createRoute({
   method: 'get',
@@ -106,7 +91,7 @@ const renameRoute = createRoute({
 conversationsRoute.openapi(renameRoute, async (c) => {
   const { id } = c.req.valid('param');
   const { title } = c.req.valid('json');
-  const conversation = await runService(() => renameExistingConversation(c.env.DB, id, title));
+  const conversation = await renameExistingConversation(c.env.DB, id, title);
 
   return c.json(conversation, 200);
 });
@@ -127,7 +112,7 @@ const deleteRoute = createRoute({
 
 conversationsRoute.openapi(deleteRoute, async (c) => {
   const { id } = c.req.valid('param');
-  await runService(() => deleteExistingConversation(c.env.DB, id));
+  await deleteExistingConversation(c.env.DB, id);
 
   return c.json({ success: true as const }, 200);
 });
@@ -155,7 +140,7 @@ const editMessageRoute = createRoute({
 conversationsRoute.openapi(editMessageRoute, async (c) => {
   const { conversationId, messageId } = c.req.valid('param');
   const { content } = c.req.valid('json');
-  await runService(() => editLastUserMessage(c.env.DB, conversationId, messageId, content));
+  await editLastUserMessage(c.env.DB, conversationId, messageId, content);
 
   return c.json({ success: true as const }, 200);
 });
@@ -176,7 +161,7 @@ const detailRoute = createRoute({
 
 conversationsRoute.openapi(detailRoute, async (c) => {
   const { id } = c.req.valid('param');
-  const result = await runService(() => getConversationDetail(c.env.DB, id));
+  const result = await getConversationDetail(c.env.DB, id);
 
   return c.json(result, 200);
 });

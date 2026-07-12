@@ -3,6 +3,7 @@ import { HTTPException } from 'hono/http-exception';
 import { createRequestHandler } from 'react-router';
 
 import { api } from './api';
+import { BusinessError } from './shared/errors';
 import { jsonError } from './shared/response';
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
@@ -12,6 +13,10 @@ app.route('/api', api);
 app.onError((error) => {
   if (error instanceof HTTPException) {
     return error.getResponse();
+  }
+
+  if (error instanceof BusinessError) {
+    return jsonError(error.message, error.status);
   }
 
   if (error instanceof SyntaxError) {
