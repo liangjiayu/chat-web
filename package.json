@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "api:generate": "tsx scripts/generate-api.ts",
     "lint": "oxlint .",
-    "lint:changed": "node scripts/lint-changed.js",
+    "lint:changed": "tsx scripts/lint-changed.ts",
     "lint:fix": "oxlint . --fix",
     "format": "oxfmt . --write",
     "prepare": "husky",

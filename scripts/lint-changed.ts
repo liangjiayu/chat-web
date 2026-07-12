@@ -4,7 +4,7 @@ import { existsSync, statSync } from 'node:fs';
 const SCRIPT_EXTENSIONS = /\.(?:js|ts|tsx)$/;
 const FORMAT_EXTENSIONS = /\.(?:js|ts|tsx|json|css|md)$/;
 
-const run = (command, args, options = {}) => {
+function run(command: string, args: string[], options: { capture?: boolean } = {}) {
   const result = spawnSync(command, args, {
     encoding: 'utf8',
     stdio: options.capture ? 'pipe' : 'inherit',
@@ -19,9 +19,10 @@ const run = (command, args, options = {}) => {
   }
 
   return result.stdout ?? '';
-};
+}
 
-const listGitFiles = (args) => run('git', args, { capture: true }).split('\0').filter(Boolean);
+const listGitFiles = (args: string[]) =>
+  run('git', args, { capture: true }).split('\0').filter(Boolean);
 
 const changedFiles = [
   ...listGitFiles(['diff', '--name-only', '--diff-filter=ACMR', '-z', 'HEAD', '--']),
