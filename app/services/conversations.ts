@@ -5,7 +5,7 @@ import type {
   ConversationResponse,
   DeleteConversationResponse,
   EditMessageResponse,
-} from '@/types/api.generated';
+} from '@/types/api-generated';
 
 export function getConversations() {
   return request<ConversationListResponse>({

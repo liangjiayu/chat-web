@@ -1,4 +1,4 @@
-import type { Conversation } from '@/types/api.generated';
+import type { Conversation } from '@/types/api-generated';
 
 type ConversationGroup = {
   label: string;

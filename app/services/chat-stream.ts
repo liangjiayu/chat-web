@@ -1,4 +1,4 @@
-import type { ChatRequest } from '@/types/api.generated';
+import type { ChatRequest } from '@/types/api-generated';
 import type { ChatStreamEvent } from '@/types/chat-stream';
 
 function parseSseBlock(block: string): ChatStreamEvent | null {

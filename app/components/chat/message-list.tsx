@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { setMessagesCache } from '@/queries/conversation-cache';
 import { editMessage } from '@/services/conversations';
 import { useChatStore } from '@/stores';
-import type { Conversation, Message } from '@/types/api.generated';
+import type { Conversation, Message } from '@/types/api-generated';
 
 import { MarkdownRenderer } from './markdown-renderer';
 import { useChatCompletion } from './use-chat-completion';

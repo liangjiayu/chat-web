@@ -4,7 +4,7 @@ import { setConversationTitleCache, setMessagesCache } from '@/queries/conversat
 import { conversationKeys, messageKeys } from '@/queries/conversations';
 import { streamChat } from '@/services/chat-stream';
 import { useChatStore } from '@/stores';
-import type { ChatRequest, Conversation } from '@/types/api.generated';
+import type { ChatRequest, Conversation } from '@/types/api-generated';
 
 type RunCompletionInput = {
   conversation: Conversation;

@@ -5,7 +5,7 @@ import type {
   ConversationMessagesResponse,
   Conversation,
   Message,
-} from '@/types/api.generated';
+} from '@/types/api-generated';
 
 import { conversationKeys, messageKeys } from './conversations';
 

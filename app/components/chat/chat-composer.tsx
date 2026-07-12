@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { setConversationsCache, setMessagesCache } from '@/queries/conversation-cache';
 import { messageKeys, useConversationsQuery, useMessagesQuery } from '@/queries/conversations';
 import { useChatStore } from '@/stores';
-import type { Conversation, ConversationMessagesResponse, Message } from '@/types/api.generated';
+import type { Conversation, ConversationMessagesResponse, Message } from '@/types/api-generated';
 
 import { useChatCompletion } from './use-chat-completion';
 import { sortConversationsByUpdatedAt } from './utils';

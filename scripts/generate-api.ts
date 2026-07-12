@@ -13,11 +13,11 @@ const generatedTypes = astToString(
     rootTypesNoSchemaPrefix: true,
   }),
 );
-const formattedTypes = await format('app/types/api.generated.ts', generatedTypes);
+const formattedTypes = await format('app/types/api-generated.ts', generatedTypes);
 
 if (formattedTypes.errors.length) {
   throw new Error('OpenAPI 生成结果格式化失败');
 }
 
 await mkdir('app/types', { recursive: true });
-await writeFile('app/types/api.generated.ts', formattedTypes.code);
+await writeFile('app/types/api-generated.ts', formattedTypes.code);

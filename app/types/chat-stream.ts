@@ -1,4 +1,4 @@
-import type { Message } from './api.generated';
+import type { Message } from './api-generated';
 
 export type ChatStreamEvent =
   | { event: 'message'; data: { message: { v: string } } }
