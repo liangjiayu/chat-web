@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 
 import { validationHook } from '../../openapi/validation';
-import { httpError } from '../../shared/response';
+import { BusinessError } from '../../shared/errors';
 import { ChatRequestSchema } from './schema';
 import { completeChat } from './service';
 
@@ -31,7 +31,7 @@ const completionRoute = createRoute({
 
 chatRoute.openapi(completionRoute, async (c) => {
   if (!c.env.DEEPSEEK_API_KEY) {
-    httpError('缺少 DEEPSEEK_API_KEY，请在 .dev.vars 或 Wrangler secret 中配置', 500);
+    throw new BusinessError('缺少 DEEPSEEK_API_KEY，请在 .dev.vars 或 Wrangler secret 中配置', 500);
   }
 
   const body = c.req.valid('json');

@@ -5,5 +5,4 @@ export const openApiConfig = {
     version: '1.0.0',
     description: 'Chat Web 服务端 API',
   },
-  servers: [{ url: '/api', description: '当前服务' }],
 };

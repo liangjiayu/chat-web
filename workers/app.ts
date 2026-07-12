@@ -4,7 +4,7 @@ import { createRequestHandler } from 'react-router';
 
 import { api } from './api';
 import { BusinessError } from './shared/errors';
-import { jsonError } from './shared/response';
+import { errorResponse } from './shared/response';
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>();
 
@@ -16,14 +16,14 @@ app.onError((error) => {
   }
 
   if (error instanceof BusinessError) {
-    return jsonError(error.message, error.status);
+    return errorResponse(error.message, error.status);
   }
 
   if (error instanceof SyntaxError) {
-    return jsonError('请求体不是合法 JSON');
+    return errorResponse('请求体不是合法 JSON');
   }
 
-  return jsonError('服务器内部错误', 500);
+  return errorResponse('服务器内部错误', 500);
 });
 
 app.get('*', (c) => {

@@ -40,7 +40,7 @@ const listRoute = createRoute({
   },
 });
 
-conversationsRoute.openapi(listRoute, async (c) => c.json(await listConversations(c.env.DB), 200));
+conversationsRoute.openapi(listRoute, async (c) => c.json(await listConversations(c.env.DB)));
 
 const createRouteDefinition = createRoute({
   method: 'post',
@@ -65,7 +65,7 @@ conversationsRoute.openapi(createRouteDefinition, async (c) => {
   const body = c.req.valid('json');
   const conversation = await createNewConversation({ env: c.env, ...body });
 
-  return c.json({ conversation }, 200);
+  return c.json({ conversation });
 });
 
 const renameRoute = createRoute({
@@ -93,7 +93,7 @@ conversationsRoute.openapi(renameRoute, async (c) => {
   const { title } = c.req.valid('json');
   const conversation = await renameExistingConversation(c.env.DB, id, title);
 
-  return c.json(conversation, 200);
+  return c.json(conversation);
 });
 
 const deleteRoute = createRoute({
@@ -114,7 +114,7 @@ conversationsRoute.openapi(deleteRoute, async (c) => {
   const { id } = c.req.valid('param');
   await deleteExistingConversation(c.env.DB, id);
 
-  return c.json({ success: true as const }, 200);
+  return c.json({ success: true });
 });
 
 const editMessageRoute = createRoute({
@@ -142,7 +142,7 @@ conversationsRoute.openapi(editMessageRoute, async (c) => {
   const { content } = c.req.valid('json');
   await editLastUserMessage(c.env.DB, conversationId, messageId, content);
 
-  return c.json({ success: true as const }, 200);
+  return c.json({ success: true });
 });
 
 const detailRoute = createRoute({
@@ -163,5 +163,5 @@ conversationsRoute.openapi(detailRoute, async (c) => {
   const { id } = c.req.valid('param');
   const result = await getConversationDetail(c.env.DB, id);
 
-  return c.json(result, 200);
+  return c.json(result);
 });
