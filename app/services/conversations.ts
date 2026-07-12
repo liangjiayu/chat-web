@@ -7,14 +7,14 @@ import type {
   EditMessageResponse,
 } from '@/types/api-generated';
 
-export function getConversations() {
+export function conversations() {
   return request<ConversationListResponse>({
     method: 'GET',
     url: '/api/conversations',
   });
 }
 
-export function getConversationMessages(conversationId: string) {
+export function getConversation(conversationId: string) {
   return request<ConversationMessagesResponse>({
     method: 'GET',
     url: `/api/conversations/${conversationId}`,

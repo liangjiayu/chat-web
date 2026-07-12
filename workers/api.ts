@@ -15,5 +15,5 @@ api.route('/', chatRoute);
 
 if (import.meta.env?.DEV) {
   api.doc('/openapi.json', openApiConfig);
-  api.get('/docs', swaggerUI({ url: '/api/openapi.json' }));
+  api.get('/docs', swaggerUI({ deepLinking: true, url: '/api/openapi.json' }));
 }

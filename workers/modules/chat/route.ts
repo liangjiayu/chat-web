@@ -12,9 +12,10 @@ export const chatRoute = new OpenAPIHono<{ Bindings: Cloudflare.Env }>({
 const completionRoute = createRoute({
   method: 'post',
   path: '/chat/completion',
+  operationId: 'createChatCompletion',
   tags: ['Chat'],
   summary: '发起聊天补全',
-  description: '返回 SSE 流，事件结构和调用流程参见 docs/server-api.md。',
+  description: '通过 SSE 流式返回聊天消息增量和处理结果。',
   request: {
     body: {
       required: true,

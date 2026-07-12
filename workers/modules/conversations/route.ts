@@ -30,6 +30,7 @@ export const conversationsRoute = new OpenAPIHono<{ Bindings: Cloudflare.Env }>(
 const listRoute = createRoute({
   method: 'get',
   path: '/conversations',
+  operationId: 'conversations',
   tags: ['Conversations'],
   summary: '获取会话列表',
   responses: {
@@ -45,6 +46,7 @@ conversationsRoute.openapi(listRoute, async (c) => c.json(await listConversation
 const createRouteDefinition = createRoute({
   method: 'post',
   path: '/conversations',
+  operationId: 'createConversation',
   tags: ['Conversations'],
   summary: '创建空会话',
   request: {
@@ -71,6 +73,7 @@ conversationsRoute.openapi(createRouteDefinition, async (c) => {
 const renameRoute = createRoute({
   method: 'patch',
   path: '/conversations/{id}',
+  operationId: 'renameConversation',
   tags: ['Conversations'],
   summary: '重命名会话',
   request: {
@@ -99,6 +102,7 @@ conversationsRoute.openapi(renameRoute, async (c) => {
 const deleteRoute = createRoute({
   method: 'delete',
   path: '/conversations/{id}',
+  operationId: 'deleteConversation',
   tags: ['Conversations'],
   summary: '删除会话',
   request: { params: ConversationIdParamsSchema },
@@ -120,6 +124,7 @@ conversationsRoute.openapi(deleteRoute, async (c) => {
 const editMessageRoute = createRoute({
   method: 'patch',
   path: '/conversations/{conversationId}/messages/{messageId}',
+  operationId: 'editMessage',
   tags: ['Messages'],
   summary: '编辑最后一条用户消息',
   request: {
@@ -148,6 +153,7 @@ conversationsRoute.openapi(editMessageRoute, async (c) => {
 const detailRoute = createRoute({
   method: 'get',
   path: '/conversations/{id}',
+  operationId: 'getConversation',
   tags: ['Conversations'],
   summary: '获取会话详情和消息',
   request: { params: ConversationIdParamsSchema },

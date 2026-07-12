@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
+  conversations,
   deleteConversation,
-  getConversationMessages,
-  getConversations,
+  getConversation,
   renameConversation,
 } from '@/services/conversations';
 
@@ -18,14 +18,14 @@ export const messageKeys = {
 export function useConversationsQuery() {
   return useQuery({
     queryKey: conversationKeys.all,
-    queryFn: getConversations,
+    queryFn: conversations,
   });
 }
 
 export function useMessagesQuery(conversationId: string | null) {
   return useQuery({
     queryKey: messageKeys.detail(conversationId),
-    queryFn: () => getConversationMessages(conversationId!),
+    queryFn: () => getConversation(conversationId!),
     enabled: Boolean(conversationId),
   });
 }
