@@ -7,7 +7,7 @@ type EmptyChatProps = {
 export function EmptyChat({ composer }: EmptyChatProps) {
   return (
     <div className="flex flex-1 flex-col items-center">
-      <h2 className="mb-8 text-center font-serif text-[34px] leading-tight font-semibold text-chat-foreground-strong md:text-[44px]">
+      <h2 className="mb-8 text-center text-[32px] leading-tight text-chat-foreground-strong">
         今天想聊点什么？
       </h2>
       <div className="w-full max-w-[680px]">{composer}</div>

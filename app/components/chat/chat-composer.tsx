@@ -126,9 +126,9 @@ export function ChatComposer() {
           {error}
         </div>
       ) : null}
-      <div className="pointer-events-auto rounded-3xl border border-chat-border bg-chat-surface px-3.5 pt-4 pb-3 shadow-[0_8px_24px_rgb(0_0_0_/_0.05)]">
+      <div className="pointer-events-auto rounded-3xl border border-chat-border bg-chat-surface px-3.5 pt-4 pb-3 shadow-[0_8px_24px_rgb(0_0_0_/_0.07)]">
         <Textarea
-          className="max-h-40 min-h-[54px] resize-none border-0 bg-transparent px-2.5 py-0 text-base shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 disabled:bg-transparent md:text-base"
+          className="max-h-42 min-h-12 resize-none border-0 bg-transparent px-2.5 py-0 text-base leading-6 shadow-none placeholder:text-chat-foreground-muted focus-visible:ring-0 disabled:bg-transparent md:text-base"
           disabled={isSending}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
@@ -137,10 +137,11 @@ export function ChatComposer() {
               void sendMessage();
             }
           }}
-          placeholder="给 Chatty 发送消息..."
+          placeholder="问问 Chatty"
+          rows={2}
           value={input}
         />
-        <div className="flex min-h-9 items-center justify-between gap-2">
+        <div className="mt-1 flex min-h-9 items-center justify-between gap-2">
           <Button
             className="size-9 rounded-xl hover:bg-chat-hover"
             size="icon"
@@ -152,7 +153,7 @@ export function ChatComposer() {
           </Button>
           <div className="flex min-w-0 items-center">
             <Button
-              className="size-9 rounded-full bg-chat-foreground-strong text-chat-primary-foreground hover:bg-chat-primary-hover disabled:bg-chat-hover disabled:text-chat-foreground-muted disabled:opacity-100"
+              className="size-9 rounded-full bg-chat-foreground-strong text-chat-primary-foreground hover:bg-chat-primary-hover disabled:bg-chat-border-strong disabled:text-chat-foreground-muted disabled:opacity-100"
               disabled={!input.trim() || isSending}
               onClick={() => void sendMessage()}
               size="icon"
@@ -160,9 +161,9 @@ export function ChatComposer() {
               type="button"
             >
               {isSending ? (
-                <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                <Loader2 className="size-5 animate-spin" />
               ) : (
-                <ArrowUp className="h-5 w-5" />
+                <ArrowUp className="size-5" />
               )}
             </Button>
           </div>
