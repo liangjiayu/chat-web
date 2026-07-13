@@ -1,19 +1,18 @@
 import {
-  Archive,
-  Briefcase,
-  Code2,
+  Clock3,
   Download,
   Edit3,
   Folder,
+  LibraryBig,
   Loader2,
-  MessageCircle,
   MoreHorizontal,
   PanelLeftClose,
   PanelLeftOpen,
-  Plus,
   Search,
   Settings2,
+  SquarePen,
   Trash2,
+  Webhook,
   X,
 } from 'lucide-react';
 import * as React from 'react';
@@ -66,27 +65,19 @@ export function ConversationSidebar() {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-30 flex h-screen w-[286px] shrink-0 flex-col overflow-hidden bg-chat-sidebar-background transition-all duration-200 md:relative md:translate-x-0',
+        'fixed inset-y-0 left-0 z-30 flex h-screen w-[260px] shrink-0 flex-col overflow-hidden bg-[#f9f9f9] transition-all duration-200 md:relative md:translate-x-0',
         sidebarOpen
-          ? 'translate-x-0 border-r border-chat-border md:w-[286px]'
+          ? 'translate-x-0 border-r border-chat-border md:w-[260px]'
           : '-translate-x-full border-r border-chat-border md:w-16 md:translate-x-0',
       )}
     >
-      <div className={cn('h-full min-w-[286px] flex-col', sidebarOpen ? 'flex' : 'hidden')}>
+      <div className={cn('h-full min-w-[260px] flex-col', sidebarOpen ? 'flex' : 'hidden')}>
         <div className="flex h-14 shrink-0 items-center justify-between px-3">
           <div className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-normal text-chat-foreground-strong">
             <AppLogo className="h-8 w-8" />
             <span>Chatty</span>
           </div>
           <div className="flex items-center gap-1">
-            <Button
-              className="size-8 text-chat-foreground-muted hover:bg-chat-hover"
-              size="icon"
-              variant="ghost"
-              title="搜索"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
             <Button
               className="hidden size-8 text-chat-foreground-muted hover:bg-chat-hover md:inline-flex"
               onClick={toggleSidebar}
@@ -108,21 +99,19 @@ export function ConversationSidebar() {
           </div>
         </div>
 
-        <div className="space-y-1 px-2 py-2">
-          <Button
-            className="h-9 w-full justify-start gap-3 rounded-lg px-2.5 text-[15px] font-medium hover:bg-chat-hover"
+        <div className="space-y-px px-2 py-2">
+          <SidebarNavItem
             disabled={isSending}
+            icon={<SquarePen className="size-[18px]" />}
+            label="新聊天"
             onClick={startNewConversation}
-            variant="ghost"
-          >
-            <Plus className="h-4 w-4 rounded-full bg-chat-border-strong p-0.5" />
-            开启新对话
-          </Button>
-          <SidebarNavItem icon={<MessageCircle className="h-4 w-4" />} label="会话" />
-          <SidebarNavItem icon={<Folder className="h-4 w-4" />} label="项目" />
-          <SidebarNavItem icon={<Archive className="h-4 w-4" />} label="文件" />
-          <SidebarNavItem icon={<Code2 className="h-4 w-4" />} label="代码" muted />
-          <SidebarNavItem icon={<Briefcase className="h-4 w-4" />} label="自定义" />
+            selected={!activeId}
+          />
+          <SidebarNavItem icon={<Search className="size-[18px]" />} label="搜索聊天" />
+          <SidebarNavItem icon={<LibraryBig className="size-[18px]" />} label="文件库" />
+          <SidebarNavItem icon={<Folder className="size-[18px]" />} label="项目" />
+          <SidebarNavItem icon={<Clock3 className="size-[18px]" />} label="已安排" />
+          <SidebarNavItem icon={<Webhook className="size-[18px]" />} label="插件" />
         </div>
 
         <div className="mt-4 flex items-center justify-between px-3 text-xs text-chat-foreground-muted">
@@ -186,7 +175,7 @@ export function ConversationSidebar() {
           </div>
           <div className="flex items-center gap-1">
             <Button
-              className="size-8 border-chat-border-strong bg-chat-sidebar-background text-chat-foreground-muted hover:bg-chat-hover"
+              className="size-8 border-chat-border-strong bg-transparent text-chat-foreground-muted hover:bg-chat-hover"
               size="icon"
               variant="outline"
               title="导出"
@@ -219,19 +208,19 @@ export function ConversationSidebar() {
           <PanelLeftOpen className="h-5 w-5" />
         </Button>
 
-        <div className="mt-8 flex flex-col items-center gap-3">
+        <div className="mt-8 flex flex-col items-center gap-px">
           <CollapsedSidebarButton
             disabled={isSending}
-            icon={<Plus className="h-5 w-5" />}
-            label="开启新对话"
+            icon={<SquarePen className="size-[18px]" />}
+            label="新聊天"
             onClick={startNewConversation}
-            rounded
+            selected={!activeId}
           />
-          <CollapsedSidebarButton icon={<MessageCircle className="h-5 w-5" />} label="会话" />
-          <CollapsedSidebarButton icon={<Archive className="h-5 w-5" />} label="文件" />
-          <CollapsedSidebarButton icon={<Folder className="h-5 w-5" />} label="项目" />
-          <CollapsedSidebarButton icon={<Code2 className="h-5 w-5" />} label="代码" muted />
-          <CollapsedSidebarButton icon={<Briefcase className="h-5 w-5" />} label="自定义" />
+          <CollapsedSidebarButton icon={<Search className="size-[18px]" />} label="搜索聊天" />
+          <CollapsedSidebarButton icon={<LibraryBig className="size-[18px]" />} label="文件库" />
+          <CollapsedSidebarButton icon={<Folder className="size-[18px]" />} label="项目" />
+          <CollapsedSidebarButton icon={<Clock3 className="size-[18px]" />} label="已安排" />
+          <CollapsedSidebarButton icon={<Webhook className="size-[18px]" />} label="插件" />
         </div>
 
         <div className="mt-auto flex flex-col items-center gap-7 pb-2">
@@ -289,29 +278,30 @@ function ConversationItemMenu({
 }
 
 function SidebarNavItem({
+  disabled,
   icon,
   label,
-  muted = false,
+  onClick,
+  selected = false,
 }: {
+  disabled?: boolean;
   icon: ReactNode;
   label: string;
-  muted?: boolean;
+  onClick?: () => void;
+  selected?: boolean;
 }) {
   return (
     <button
       className={cn(
-        'flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-left text-[15px] font-medium hover:bg-chat-hover',
-        muted && 'text-chat-foreground-muted',
+        'flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-left text-sm font-normal hover:bg-chat-hover disabled:cursor-not-allowed disabled:opacity-50',
+        selected && 'bg-chat-selection',
       )}
+      disabled={disabled}
+      onClick={onClick}
       type="button"
     >
-      <span className="text-chat-foreground-muted">{icon}</span>
+      <span>{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {muted ? (
-        <span className="rounded-full border border-chat-border-strong bg-chat-sidebar-background px-1.5 py-0.5 text-xs text-chat-info">
-          升级
-        </span>
-      ) : null}
     </button>
   );
 }
@@ -320,24 +310,18 @@ function CollapsedSidebarButton({
   disabled,
   icon,
   label,
-  muted = false,
   onClick,
-  rounded = false,
+  selected = false,
 }: {
   disabled?: boolean;
   icon: ReactNode;
   label: string;
-  muted?: boolean;
   onClick?: () => void;
-  rounded?: boolean;
+  selected?: boolean;
 }) {
   return (
     <Button
-      className={cn(
-        'size-8 hover:bg-chat-hover',
-        muted && 'text-chat-foreground-muted hover:text-chat-foreground-muted',
-        rounded && 'rounded-full bg-chat-hover',
-      )}
+      className={cn('size-8 hover:bg-chat-hover', selected && 'bg-chat-selection')}
       disabled={disabled}
       onClick={onClick}
       size="icon"
